@@ -1,7 +1,7 @@
 # nonphotorealistic shader
 
 ## demo
-anniesu1.github.io/nonphotorealistic-shader
+https://anniesu1.github.io/nonphotorealistic-shader/
 
 ## resources
 _papers_
