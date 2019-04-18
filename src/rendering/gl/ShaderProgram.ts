@@ -1,6 +1,7 @@
 import {vec2, vec3, vec4, mat4, mat3} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
+import Texture from './Texture';
 
 var activeProgram: WebGLProgram = null;
 
@@ -44,6 +45,10 @@ class ShaderProgram {
   unifDimensions: WebGLUniformLocation;
   unifPlanePos: WebGLUniformLocation;
 
+  unifSampler1: WebGLUniformLocation;
+  unifSampler2: WebGLUniformLocation;
+  unifSampler3: WebGLUniformLocation;
+
   unifShowPopulation: WebGLUniformLocation; // 0: false, 1: true
   unifShowTerrainGradient: WebGLUniformLocation;
   unifShowTerrainBinary: WebGLUniformLocation;
@@ -78,10 +83,15 @@ class ShaderProgram {
     this.attrTransform3 = gl.getAttribLocation(this.prog, "vs_Transform3");
     this.attrTransform4 = gl.getAttribLocation(this.prog, "vs_Transform4");
 
+    this.unifPlanePos = gl.getUniformLocation(this.prog, "u_PlanePos");
+
+    this.unifSampler1   = gl.getUniformLocation(this.prog, "u_BrushStroke1");
+    this.unifSampler2   = gl.getUniformLocation(this.prog, "u_BrushStroke2");
+    this.unifSampler3   = gl.getUniformLocation(this.prog, "u_BrushStroke3");
+
     this.unifShowPopulation = gl.getUniformLocation(this.prog, "u_ShowPopulation");
     this.unifShowTerrainGradient = gl.getUniformLocation(this.prog, "u_ShowTerrainGradient");
     this.unifShowTerrainBinary = gl.getUniformLocation(this.prog, "u_ShowTerrainBinary");
-    this.unifPlanePos = gl.getUniformLocation(this.prog, "u_PlanePos");
 
   }
 
@@ -90,6 +100,14 @@ class ShaderProgram {
       gl.useProgram(this.prog);
       activeProgram = this.prog;
     }
+  }
+
+  // Bind the given Texture to the given texture unit
+  bindTexToUnit(handleName: WebGLUniformLocation, tex: Texture, unit: number) {
+    this.use();
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    tex.bindTex();
+    gl.uniform1i(handleName, unit);
   }
 
   setPlanePos(pos: vec2) {

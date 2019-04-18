@@ -8,6 +8,9 @@ import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
+import Texture from './rendering/gl/Texture';
+
+// TODO: GET RID OF LEGACY CODE 
 import LSystem from './lsystem/LSystem';
 import Plane from './geometry/Plane';
 import CityGrid from './city/CityGrid';
@@ -22,7 +25,12 @@ let square: Square;
 let screenQuad: ScreenQuad;
 let lSystem: LSystem;
 let plane: Plane;
-let cube: Cube; // TODO
+let cube: Cube;
+
+// Textures
+let brushStroke1: Texture;
+let brushStroke2: Texture;
+let brushStroke3: Texture;
 
 // Road generation
 let highwayT: mat4[] = [];
@@ -41,12 +49,17 @@ let gridHeight: number = 100;
 // Misc.
 let time: number = 0.0;
 
-
 function loadScene() {
+  // Create geometry
   square = new Square();
   square.create();
   cube = new Cube(vec3.fromValues(0, 0, 0));
   cube.create();
+
+  // Create textures
+  brushStroke1 = new Texture('./textures/brush_stroke_1.png', 0);
+  brushStroke2 = new Texture('./textures/brush_stroke_2.png', 0);
+  brushStroke3 = new Texture('./textures/brush_stroke_3.png', 0);
 
   // Create terrain map
   screenQuad = new ScreenQuad();
@@ -91,7 +104,7 @@ function setTransformArrays(transforms: mat4[], col: vec4) {
     transform4Array.push(T[14]);
     transform4Array.push(T[15]);
 
-    // Color (brown)
+    // Color
     colorsArray.push(col[0]);
     colorsArray.push(col[1]);
     colorsArray.push(col[2]);
@@ -131,7 +144,6 @@ function setUpGrid() {
   let transform2Cube: Float32Array = buildingVBOData.transform2Array;
   let transform3Cube: Float32Array = buildingVBOData.transform3Array;
   let transform4Cube: Float32Array = buildingVBOData.transform4Array;
-  console.log('transform1cube.length = ' + transform1Cube.length);
   cube.setInstanceVBOs(colorsCube, transform1Cube, transform2Cube, transform3Cube, transform4Cube);
   cube.setNumInstances(transform1Cube.length / 4.0);
 }
@@ -188,10 +200,17 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/terrain-frag.glsl')),
   ])
 
-  const painterlyShader = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/painterly-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/painterly-frag.glsl')),
-  ])
+  // const painterlyShader = new ShaderProgram([
+  //   new Shader(gl.VERTEX_SHADER, require('./shaders/painterly-vert.glsl')),
+  //   new Shader(gl.FRAGMENT_SHADER, require('./shaders/painterly-frag.glsl')),
+  // ])
+
+  // Bind textures to shader
+  flatShader.bindTexToUnit(flatShader.unifSampler1, brushStroke1, 0);
+  flatShader.bindTexToUnit(flatShader.unifSampler2, brushStroke2, 0);
+  flatShader.bindTexToUnit(flatShader.unifSampler3, brushStroke3, 0);
+
+
 
   // Set the plane pos
   terrain3DShader.setPlanePos(vec2.fromValues(0, -100));
@@ -234,6 +253,7 @@ function main() {
 
     // Render 
     renderer.render(camera, flatShader, [screenQuad]); // Sky
+    renderer.render(camera, instancedShader, [cube]);
     //renderer.render(camera, terrain3DShader, [plane]); // Ground
     //renderer.render(camera, instancedShader, [square]); // Roads
     //renderer.render(camera, buildingShader, [cube]); // Buildings

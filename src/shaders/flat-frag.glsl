@@ -8,6 +8,9 @@ uniform float u_Time;
 in vec2 fs_Pos;
 out vec4 out_Col;
 
+uniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3;
+
+
 /**
  * Noise functions
  */
@@ -186,6 +189,12 @@ void main() {
     // Multiply the color by (1 - distance) -- leverage distance of fragment from screen center
     out_Col = (1.0 - distance * 0.4) * (vec4(getMountainColor(), 1.0) + vec4(pinkClouds * 0.3, 0.3) + (starColor * 0.9));
     
+    // Calculate uv coordinates
+    vec2 uv = 0.5 * (fs_Pos.xy + vec2(1.0));
+    uv.x *= u_Dimensions.x / u_Dimensions.y;
+    uv.x -= 0.25 * u_Dimensions.x / u_Dimensions.y;
+    uv.y *= 0.5;
+
     // Set out color to a basic black color
     out_Col = vec4(0.0, 0.0, 0.0, 1.0);
 }
