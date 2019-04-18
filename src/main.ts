@@ -111,46 +111,9 @@ function setTransformArrays(transforms: mat4[], col: vec4) {
 function setUpGrid() {
   grid = new CityGrid(gridWidth, gridHeight);
   grid.rasterize();
-  grid.generateValidPoints(); // TODO: let player modify number of buildings
+  grid.generateValidPoints(); 
   let gridVBOData: any = grid.setGridVBO();
   let buildingVBOData: any = grid.setBuildingVBO();
-
-  // let transform1Array: number[] = [];
-  // let transform2Array: number[] = [];
-  // let transform3Array: number[] = [];
-  // let transform4Array: number[] = [];
-  // let colorsArray: number[] = [];
-
-  // for (let i = 0; i < gridWidth; i++) {
-  //   for (let j = 0; j < gridHeight; j++) {
-  //     if (gridVBOData[i][j]) {
-  //       transform1Array.push(1);
-  //       transform1Array.push(0);
-  //       transform1Array.push(0);
-  //       transform1Array.push(0);
-
-  //       transform2Array.push(0);
-  //       transform2Array.push(1);
-  //       transform2Array.push(0);
-  //       transform2Array.push(0);
-
-  //       transform3Array.push(0);
-  //       transform3Array.push(0);
-  //       transform3Array.push(1);
-  //       transform3Array.push(0);
-
-  //       transform4Array.push(i);
-  //       transform4Array.push(0);
-  //       transform4Array.push(j);
-  //       transform4Array.push(1);
-
-  //       colorsArray.push(1);
-  //       colorsArray.push(0);
-  //       colorsArray.push(0);
-  //       colorsArray.push(1);
-  //     }
-  //   }
-  // }
 
   let colorsSquare: Float32Array = gridVBOData.colorsArray;
   let transform1Square: Float32Array = gridVBOData.transform1Array;
@@ -184,7 +147,6 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -224,6 +186,11 @@ function main() {
   const terrain3DShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/terrain-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/terrain-frag.glsl')),
+  ])
+
+  const painterlyShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/painterly-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/painterly-frag.glsl')),
   ])
 
   // Set the plane pos
