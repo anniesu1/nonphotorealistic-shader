@@ -2,6 +2,7 @@ import {vec3, vec4, vec2} from 'gl-matrix';
 import Drawable from '../rendering/gl/Drawable';
 import {gl} from '../globals';
 import * as Loader from 'webgl-obj-loader';
+//import BrushStroke from '../painterly/BrushStroke';
 
 class Mesh extends Drawable {
   indices: Uint32Array;
@@ -20,8 +21,9 @@ class Mesh extends Drawable {
   vertices: vec3[] = [];
   triangleAreas: number[] = [];
   expandedTriangleArr: number[] = [];
-  numParticles: number = 100;
+  numParticles: number = 1000;
   particles: vec3[] = [];
+  //brushStrokes: BrushStroke[] = [];
 
   objString: string;
 
@@ -47,10 +49,8 @@ class Mesh extends Drawable {
     for (var i = 0; i < loadedMesh.vertices.length; i++) {
       posTemp.push(loadedMesh.vertices[i]);
       if (i % 3 == 2) {
+        // Push 4th coordinate
         posTemp.push(1.0);
-
-        let idx: number = i + this.vertices.length;
-
         // Push to vertices array
         this.vertices.push(vec3.fromValues(posTemp[i - 2], posTemp[i - 1], posTemp[i]));
       }
@@ -119,17 +119,17 @@ class Mesh extends Drawable {
       vec3.add(add2, add1, add2);
       vec3.add(add3, add2, add3);
       let sample = add3;
+
       this.particles.push(sample);
     }
-
     console.log("Successfully created " + this.particles.length + " particles on the mesh");
-
 
 
     for (var i = 0; i < loadedMesh.vertexNormals.length; i++) {
       norTemp.push(loadedMesh.vertexNormals[i]);
       if (i % 3 == 2) norTemp.push(0.0);
     }
+    console.log('Mesh - Num normals: ' + norTemp.length);
 
     uvsTemp = loadedMesh.textures;
     idxTemp = loadedMesh.indices;

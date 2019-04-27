@@ -13,9 +13,7 @@ import Mesh from './geometry/Mesh';
 import BrushStroke from './painterly/BrushStroke';
 
 // TODO: GET RID OF LEGACY CODE 
-import LSystem from './lsystem/LSystem';
 import Plane from './geometry/Plane';
-import CityGrid from './city/CityGrid';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -25,7 +23,6 @@ const controls = {
 // Geometry
 let square: Square; // Brush stroke
 let screenQuad: ScreenQuad;
-let lSystem: LSystem;
 let plane: Plane;
 let cube: Cube;
 let sphereObj: string = readTextFile('./src/sphere.obj');
@@ -66,7 +63,7 @@ function loadScene() {
   brushStroke2 = new Texture('../textures/brush_stroke_01.png', 0);
   brushStroke3 = new Texture('../textures/brush_stroke_01.png', 0);
 
-  // Create terrain map
+  // Create background
   screenQuad = new ScreenQuad();
   screenQuad.create();
   plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(100,100), 20);
@@ -169,7 +166,6 @@ function main() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
   // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
   gl.enable(gl.DEPTH_TEST);
 
   const instancedShader = new ShaderProgram([

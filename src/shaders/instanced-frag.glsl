@@ -6,6 +6,7 @@ uniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3;
 in vec4 fs_Col;
 in vec4 fs_Pos;
 in vec2 fs_TextureCoord;
+in vec4 fs_Nor;
 
 out vec4 out_Col;
 
