@@ -49,6 +49,8 @@ class Mesh extends Drawable {
       if (i % 3 == 2) {
         posTemp.push(1.0);
 
+        let idx: number = i + this.vertices.length;
+
         // Push to vertices array
         this.vertices.push(vec3.fromValues(posTemp[i - 2], posTemp[i - 1], posTemp[i]));
       }
@@ -92,7 +94,6 @@ class Mesh extends Drawable {
     for (var i = 0; i < this.numParticles; i++) {
       let length = this.expandedTriangleArr.length;
       let tIdx = this.expandedTriangleArr[Math.round(Math.random() * length)];
-      console.log("tIdx: " + tIdx);
       let startVIdx = tIdx * 3;
 
       // Sample the surface
