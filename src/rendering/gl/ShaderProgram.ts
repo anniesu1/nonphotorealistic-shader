@@ -31,8 +31,9 @@ class ShaderProgram {
   attrTransform2: number;
   attrTransform3: number;
   attrTransform4: number;
-
   attrUV: number;
+
+  attrTextureCoord: number;
 
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
@@ -69,6 +70,14 @@ class ShaderProgram {
     this.attrNor = gl.getAttribLocation(this.prog, "vs_Nor");
     this.attrTranslate = gl.getAttribLocation(this.prog, "vs_Translate");
     this.attrUV = gl.getAttribLocation(this.prog, "vs_UV");
+
+    this.attrTransform1 = gl.getAttribLocation(this.prog, "vs_Transform1");
+    this.attrTransform2 = gl.getAttribLocation(this.prog, "vs_Transform2");
+    this.attrTransform3 = gl.getAttribLocation(this.prog, "vs_Transform3");
+    this.attrTransform4 = gl.getAttribLocation(this.prog, "vs_Transform4");
+
+    this.attrTextureCoord = gl.getAttribLocation(this.prog, "vs_TextureCoord");
+
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
@@ -77,13 +86,8 @@ class ShaderProgram {
     this.unifEye   = gl.getUniformLocation(this.prog, "u_Eye");
     this.unifRef   = gl.getUniformLocation(this.prog, "u_Ref");
     this.unifUp   = gl.getUniformLocation(this.prog, "u_Up");
-
-    this.attrTransform1 = gl.getAttribLocation(this.prog, "vs_Transform1");
-    this.attrTransform2 = gl.getAttribLocation(this.prog, "vs_Transform2");
-    this.attrTransform3 = gl.getAttribLocation(this.prog, "vs_Transform3");
-    this.attrTransform4 = gl.getAttribLocation(this.prog, "vs_Transform4");
-
     this.unifPlanePos = gl.getUniformLocation(this.prog, "u_PlanePos");
+    this.unifDimensions = gl.getUniformLocation(this.prog, "u_Dimensions");
 
     this.unifSampler1   = gl.getUniformLocation(this.prog, "u_BrushStroke1");
     this.unifSampler2   = gl.getUniformLocation(this.prog, "u_BrushStroke2");
@@ -108,6 +112,13 @@ class ShaderProgram {
     gl.activeTexture(gl.TEXTURE0 + unit);
     tex.bindTex();
     gl.uniform1i(handleName, unit);
+  }
+
+  setTextureCoord(coord: vec2) {
+    this.use();
+    if (this.attrTextureCoord !== -1) {
+      gl.uniform2fv(this.attrTextureCoord, coord);
+    }
   }
 
   setPlanePos(pos: vec2) {

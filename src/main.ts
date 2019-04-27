@@ -57,15 +57,21 @@ function loadScene() {
   cube.create();
 
   // Create textures
-  brushStroke1 = new Texture('./textures/brush_stroke_1.png', 0);
-  brushStroke2 = new Texture('./textures/brush_stroke_2.png', 0);
-  brushStroke3 = new Texture('./textures/brush_stroke_3.png', 0);
+  brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
+  brushStroke2 = new Texture('../textures/brush_stroke_02.png', 0);
+  brushStroke3 = new Texture('../textures/brush_stroke_03.png', 0);
 
   // Create terrain map
   screenQuad = new ScreenQuad();
   screenQuad.create();
   plane = new Plane(vec3.fromValues(0,0,0), vec2.fromValues(100,100), 20);
   plane.create();
+
+  // Create a dummy square
+  let identity: mat4 = mat4.create();
+  let transforms: mat4[] = [];
+  transforms.push(identity);
+  setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1));
 }
 
 function setTransformArrays(transforms: mat4[], col: vec4) {
@@ -121,33 +127,6 @@ function setTransformArrays(transforms: mat4[], col: vec4) {
   square.setNumInstances(transforms.length);
 }
 
-function setUpGrid() {
-  grid = new CityGrid(gridWidth, gridHeight);
-  grid.rasterize();
-  grid.generateValidPoints(); 
-  let gridVBOData: any = grid.setGridVBO();
-  let buildingVBOData: any = grid.setBuildingVBO();
-
-  let colorsSquare: Float32Array = gridVBOData.colorsArray;
-  let transform1Square: Float32Array = gridVBOData.transform1Array;
-  let transform2Square: Float32Array = gridVBOData.transform2Array;
-  let transform3Square: Float32Array = gridVBOData.transform3Array;
-  let transform4Square: Float32Array = gridVBOData.transform4Array;
-
-  square.setInstanceVBOs(colorsSquare, transform1Square, transform2Square, 
-    transform3Square, transform4Square);
-  square.setNumInstances(transform1Square.length / 4.0);
-  console.log('Set up rasterization VBOs');
-
-  let colorsCube: Float32Array = buildingVBOData.colorsArray;
-  let transform1Cube: Float32Array = buildingVBOData.transform1Array;
-  let transform2Cube: Float32Array = buildingVBOData.transform2Array;
-  let transform3Cube: Float32Array = buildingVBOData.transform3Array;
-  let transform4Cube: Float32Array = buildingVBOData.transform4Array;
-  cube.setInstanceVBOs(colorsCube, transform1Cube, transform2Cube, transform3Cube, transform4Cube);
-  cube.setNumInstances(transform1Cube.length / 4.0);
-}
-
 function main() {
   // Initial display for framerate
   const stats = Stats();
@@ -178,6 +157,8 @@ function main() {
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
   gl.enable(gl.DEPTH_TEST);
 
   const instancedShader = new ShaderProgram([
@@ -188,11 +169,6 @@ function main() {
   const flatShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/flat-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/flat-frag.glsl')),
-  ]);
-
-  const buildingShader = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/building-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/building-frag.glsl')),
   ]);
 
   const terrain3DShader = new ShaderProgram([
@@ -209,8 +185,6 @@ function main() {
   flatShader.bindTexToUnit(flatShader.unifSampler1, brushStroke1, 0);
   flatShader.bindTexToUnit(flatShader.unifSampler2, brushStroke2, 0);
   flatShader.bindTexToUnit(flatShader.unifSampler3, brushStroke3, 0);
-
-
 
   // Set the plane pos
   terrain3DShader.setPlanePos(vec2.fromValues(0, -100));
@@ -235,10 +209,6 @@ function main() {
   textureRenderer.setClearColor(0, 0, 0, 1);
   let textureData: Uint8Array = textureRenderer.renderTexture(camera, textureShader, [plane]);
 
-  // Set up city generation
-  setUpGrid();
-
-
   // *** TICK FUNCTION *** This function will be called every frame
   function tick() {
     camera.update();
@@ -246,8 +216,6 @@ function main() {
     instancedShader.setTime(time);
     flatShader.setTime(time++);
     terrain3DShader.setTime(time++);
-    buildingShader.setTime(time++);
-    buildingShader.setEyeRefUp(camera.position, camera.target, camera.up);
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
 
@@ -255,7 +223,7 @@ function main() {
     renderer.render(camera, flatShader, [screenQuad]); // Sky
     renderer.render(camera, instancedShader, [cube]);
     //renderer.render(camera, terrain3DShader, [plane]); // Ground
-    //renderer.render(camera, instancedShader, [square]); // Roads
+    renderer.render(camera, instancedShader, [square]); // Roads
     //renderer.render(camera, buildingShader, [cube]); // Buildings
 
     stats.end();
@@ -269,12 +237,14 @@ function main() {
     camera.setAspectRatio(window.innerWidth / window.innerHeight);
     camera.updateProjectionMatrix();
     flatShader.setDimensions(window.innerWidth, window.innerHeight);
+    instancedShader.setDimensions(window.innerWidth, window.innerHeight);
   }, false);
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.setAspectRatio(window.innerWidth / window.innerHeight);
   camera.updateProjectionMatrix();
   flatShader.setDimensions(window.innerWidth, window.innerHeight);
+  instancedShader.setDimensions(window.innerWidth, window.innerHeight);
 
   
   // Start the render loop

@@ -170,31 +170,34 @@ vec3 getMountainColor() {
 
 
 void main() {
-    // Stars
-    float time = 0.8 * u_Time;
-	  vec2 position = fs_Pos * 0.5 * u_Dimensions;
-	  float color = pow(noise(position), 40.0) * 20.0;
-	  float r1 = noise(position*noise(vec2(sin(time*0.01))));
-	  float r2 = noise(position*noise(vec2(cos(time*0.01), sin(time*0.01))));
-	  float r3 = noise(position*noise(vec2(sin(time*0.05), cos(time*0.05))));
-	  vec4 starColor = vec4(vec3(color*r1, color*r2, color*r3), 1.0);
+    // // Stars
+    // float time = 0.8 * u_Time;
+	//   vec2 position = fs_Pos * 0.5 * u_Dimensions;
+	//   float color = pow(noise(position), 40.0) * 20.0;
+	//   float r1 = noise(position*noise(vec2(sin(time*0.01))));
+	//   float r2 = noise(position*noise(vec2(cos(time*0.01), sin(time*0.01))));
+	//   float r3 = noise(position*noise(vec2(sin(time*0.05), cos(time*0.05))));
+	//   vec4 starColor = vec4(vec3(color*r1, color*r2, color*r3), 1.0);
 
-    // Sky
-    float noise = dampen(gain(0.98, fbmPerlin(fs_Pos + u_Time / 1500.0f, 10.f, 1.328)));
-    vec3 pinkClouds = vec3(252.0, 169.0, 184.0) * noise / 255.f;
+    // // Sky
+    // float noise = dampen(gain(0.98, fbmPerlin(fs_Pos + u_Time / 1500.0f, 10.f, 1.328)));
+    // vec3 pinkClouds = vec3(252.0, 169.0, 184.0) * noise / 255.f;
 
-    // Apply vignette
-    vec2 vigPos = vec2(fs_Pos[0], fs_Pos[1]);
-    float distance = sqrt((vigPos[0]) * (vigPos[0]) + (vigPos[1]) * (vigPos[1]));
-    // Multiply the color by (1 - distance) -- leverage distance of fragment from screen center
-    out_Col = (1.0 - distance * 0.4) * (vec4(getMountainColor(), 1.0) + vec4(pinkClouds * 0.3, 0.3) + (starColor * 0.9));
+    // // Apply vignette
+    // vec2 vigPos = vec2(fs_Pos[0], fs_Pos[1]);
+    // float distance = sqrt((vigPos[0]) * (vigPos[0]) + (vigPos[1]) * (vigPos[1]));
+    // // Multiply the color by (1 - distance) -- leverage distance of fragment from screen center
+    // out_Col = (1.0 - distance * 0.4) * (vec4(getMountainColor(), 1.0) + vec4(pinkClouds * 0.3, 0.3) + (starColor * 0.9));
     
-    // Calculate uv coordinates
-    vec2 uv = 0.5 * (fs_Pos.xy + vec2(1.0));
-    uv.x *= u_Dimensions.x / u_Dimensions.y;
-    uv.x -= 0.25 * u_Dimensions.x / u_Dimensions.y;
-    uv.y *= 0.5;
+    // // Calculate uv coordinates
+    // vec2 uv = 0.5 * (fs_Pos.xy + vec2(1.0));
+    // uv.x *= u_Dimensions.x / u_Dimensions.y;
+    // uv.x -= 0.25 * u_Dimensions.x / u_Dimensions.y;
+    // uv.y *= 0.5;
 
-    // Set out color to a basic black color
-    out_Col = vec4(0.0, 0.0, 0.0, 1.0);
+    // // Set out color to a basic black color
+    // out_Col = vec4(0.0, 0.0, 0.0, 1.0);
+
+      out_Col = vec4(0.5 * (fs_Pos + vec2(1.0)), 0.0, 1.0);
+
 }

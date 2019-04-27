@@ -32,7 +32,7 @@ class Square extends Drawable {
     this.generateTransform2();
     this.generateTransform3();
     this.generateTransform4();
-
+    this.generateTextureCoord();
 
     this.count = this.indices.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.bufIdx);
@@ -40,6 +40,16 @@ class Square extends Drawable {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufPos);
     gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW);
+
+    // Set up texture coordinates
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTextureCoord);
+    const textureCoordinates = [
+      0.0,  0.0,
+      1.0,  0.0,
+      1.0,  1.0,
+      0.0,  1.0,
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
     console.log(`Created square`);
   }

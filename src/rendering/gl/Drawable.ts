@@ -13,6 +13,7 @@ abstract class Drawable {
   bufTransform2: WebGLBuffer;
   bufTransform3: WebGLBuffer;
   bufTransform4: WebGLBuffer;
+  bufTextureCoord: WebGLBuffer;
 
   idxGenerated: boolean = false;
   posGenerated: boolean = false;
@@ -26,6 +27,8 @@ abstract class Drawable {
   transform3Generated: boolean = false;
   transform4Generated: boolean = false;
 
+  textureCoordGenerated: boolean = false;
+
 
   numInstances: number = 0; // How many instances of this Drawable the shader program should draw
 
@@ -38,6 +41,11 @@ abstract class Drawable {
     gl.deleteBuffer(this.bufCol);
     gl.deleteBuffer(this.bufTranslate);
     gl.deleteBuffer(this.bufUV);
+  }
+
+  generateTextureCoord() {
+    this.textureCoordGenerated = true;
+    this.bufTextureCoord = gl.createBuffer();
   }
 
   generateIdx() {
