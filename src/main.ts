@@ -1,4 +1,4 @@
-import {vec2, vec3, vec4, mat4} from 'gl-matrix';
+import {vec2, vec3, vec4, mat4, quat} from 'gl-matrix';
 import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
 import Square from './geometry/Square';
@@ -6,9 +6,11 @@ import ScreenQuad from './geometry/ScreenQuad';
 import Cube from './geometry/Cube';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
-import {setGL} from './globals';
+import {setGL, readTextFile} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import Texture from './rendering/gl/Texture';
+import Mesh from './geometry/Mesh';
+import BrushStroke from './painterly/BrushStroke';
 
 // TODO: GET RID OF LEGACY CODE 
 import LSystem from './lsystem/LSystem';
@@ -21,30 +23,22 @@ const controls = {
 };
 
 // Geometry
-let square: Square;
+let square: Square; // Brush stroke
 let screenQuad: ScreenQuad;
 let lSystem: LSystem;
 let plane: Plane;
 let cube: Cube;
+let sphereObj: string = readTextFile('./src/sphere.obj');
+let sphere: Mesh;
 
 // Textures
 let brushStroke1: Texture;
 let brushStroke2: Texture;
 let brushStroke3: Texture;
 
-// Road generation
-let highwayT: mat4[] = [];
-let roadT: mat4[] = [];
-let prevIter: number = 100;
-let prevRotation: number = 120;
-let showPopDensity: boolean = false;
-let showTerrainElevation: boolean = true;
-let showTerrainBinary: boolean = false;
+// Transforms
+let brushT: mat4[] = [];
 
-// City generation
-let grid: CityGrid;
-let gridWidth: number = 100;
-let gridHeight: number = 100;
 
 // Misc.
 let time: number = 0.0;
@@ -55,6 +49,16 @@ function loadScene() {
   square.create();
   cube = new Cube(vec3.fromValues(0, 0, 0));
   cube.create();
+  sphere = new Mesh(sphereObj, vec3.fromValues(0.0, 0.0, 0.0));
+  sphere.create();
+
+  for (let i = 0; i < sphere.particles.length; i++) {
+    // For each particle in the sphere mesh, create a brush stroke
+    let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
+      vec3.fromValues(1, 0, 0));
+    brushT.push(temp.getTransformationMatrix());
+  }
+  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 0));
 
   // Create textures 
   // TODO: why does it only work with 1 set brush stroke type?
@@ -69,10 +73,10 @@ function loadScene() {
   plane.create();
 
   // Create a dummy square
-  let identity: mat4 = mat4.create();
-  let transforms: mat4[] = [];
-  transforms.push(identity);
-  setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1));
+  // let identity: mat4 = mat4.create();
+  // let transforms: mat4[] = [];
+  // transforms.push(identity);
+  // setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1));
 }
 
 function setTransformArrays(transforms: mat4[], col: vec4) {
@@ -142,7 +146,11 @@ function main() {
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
-  const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
+  // const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
+  const gl = canvas.getContext("webgl2", {
+    premultipliedAlpha: false  // Ask for non-premultiplied alpha
+  });
+
   if (!gl) {
     alert('WebGL 2 not supported!');
   }
@@ -160,6 +168,8 @@ function main() {
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+  // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
   gl.enable(gl.DEPTH_TEST);
 
   const instancedShader = new ShaderProgram([
@@ -222,7 +232,7 @@ function main() {
 
     // Render 
     renderer.render(camera, flatShader, [screenQuad]); // Sky
-    renderer.render(camera, instancedShader, [cube]);
+    // renderer.render(camera, instancedShader, [cube]);
     //renderer.render(camera, terrain3DShader, [plane]); // Ground
     renderer.render(camera, instancedShader, [square]); // Roads
     //renderer.render(camera, buildingShader, [cube]); // Buildings

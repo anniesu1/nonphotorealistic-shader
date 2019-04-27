@@ -1,4 +1,4 @@
-import {vec3, vec4} from 'gl-matrix';
+import {vec3, vec4, vec2} from 'gl-matrix';
 import Drawable from '../rendering/gl/Drawable';
 import {gl} from '../globals';
 import * as Loader from 'webgl-obj-loader';
@@ -16,6 +16,12 @@ class Mesh extends Drawable {
   transform2: Float32Array;
   transform3: Float32Array;
   transform4: Float32Array;
+
+  vertices: vec3[] = [];
+  triangleAreas: number[] = [];
+  expandedTriangleArr: number[] = [];
+  numParticles: number = 100;
+  particles: vec3[] = [];
 
   objString: string;
 
@@ -40,8 +46,84 @@ class Mesh extends Drawable {
     //posTemp = loadedMesh.vertices;
     for (var i = 0; i < loadedMesh.vertices.length; i++) {
       posTemp.push(loadedMesh.vertices[i]);
-      if (i % 3 == 2) posTemp.push(1.0);
+      if (i % 3 == 2) {
+        posTemp.push(1.0);
+
+        // Push to vertices array
+        this.vertices.push(vec3.fromValues(posTemp[i - 2], posTemp[i - 1], posTemp[i]));
+      }
     }
+    // Debugging
+    console.log('Num vertices: ' + this.vertices.length);
+
+    // For each triangle, calculate its area
+    for (var i = 0; i <= this.vertices.length - 3; i += 3) {
+      let v1: vec3 = this.vertices[i];
+      let v2: vec3 = this.vertices[i + 1];
+      let v3: vec3 = this.vertices[i + 2];
+      let side1: vec3 = vec3.create();
+      vec3.subtract(side1, v2, v1);
+      let side2: vec3 = vec3.create();
+      vec3.subtract(side2, v3, v1);
+      let cross: vec3 = vec3.create();
+      vec3.cross(cross, side1, side2);
+      let area: number = 0.5 * vec3.length(cross);
+      this.triangleAreas.push(area);
+    }
+
+    // Find the smaller value on the array and divide every element by it, 
+    // rounding to the next integer
+    let minArea: number = Math.min.apply(null, this.triangleAreas);
+    for (var i = 0; i < this.triangleAreas.length; i++) {
+      this.triangleAreas[i] = Math.ceil(this.triangleAreas[i] / minArea);
+    }
+
+    // Add up the elements of the array and initialize a second array of that length, so that 
+    // the index i of a triangle is repeated as many times as it’s corresponding values 
+    // on the first array
+    for (var i = 0; i < this.triangleAreas.length; i++) {
+      let currArea: number = this.triangleAreas[i];
+      for (var j = 0; j < currArea; j++) {
+        this.expandedTriangleArr.push(i);
+      }
+    }
+
+    // Pick a random element within A2, t = A2[ random(0,1) * length(A2) ] as our triangle index
+    for (var i = 0; i < this.numParticles; i++) {
+      let length = this.expandedTriangleArr.length;
+      let tIdx = this.expandedTriangleArr[Math.round(Math.random() * length)];
+      console.log("tIdx: " + tIdx);
+      let startVIdx = tIdx * 3;
+
+      // Sample the surface
+      let u = Math.random();
+      let v = Math.random();
+      if (u + v > 1.0) {
+        v = 1 - v;
+        u = 1 - u;
+      }
+      let w = 1 - (u + v);
+      let vert1 = this.vertices[startVIdx];
+      let vert2 = this.vertices[startVIdx + 1];
+      let vert3 = this.vertices[startVIdx + 2];
+      if (!vert1 || !vert2 || !vert3) {
+        console.log("index: " + startVIdx);
+      }
+      let add1 = vec3.create();
+      vec3.scale(add1, vert1, u);
+      let add2 = vec3.create();
+      vec3.scale(add2, vert2, v);
+      let add3 = vec3.create();
+      vec3.scale(add3, vert3, w);
+      vec3.add(add2, add1, add2);
+      vec3.add(add3, add2, add3);
+      let sample = add3;
+      this.particles.push(sample);
+    }
+
+    console.log("Successfully created " + this.particles.length + " particles on the mesh");
+
+
 
     for (var i = 0; i < loadedMesh.vertexNormals.length; i++) {
       norTemp.push(loadedMesh.vertexNormals[i]);
