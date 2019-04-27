@@ -56,10 +56,11 @@ function loadScene() {
   cube = new Cube(vec3.fromValues(0, 0, 0));
   cube.create();
 
-  // Create textures
+  // Create textures 
+  // TODO: why does it only work with 1 set brush stroke type?
   brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
-  brushStroke2 = new Texture('../textures/brush_stroke_02.png', 0);
-  brushStroke3 = new Texture('../textures/brush_stroke_03.png', 0);
+  brushStroke2 = new Texture('../textures/brush_stroke_01.png', 0);
+  brushStroke3 = new Texture('../textures/brush_stroke_01.png', 0);
 
   // Create terrain map
   screenQuad = new ScreenQuad();
