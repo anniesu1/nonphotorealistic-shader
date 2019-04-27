@@ -43,9 +43,11 @@ void main()
     vec4 pixelCoord = u_ViewProj * newPos;
 
     // Pass texture sample position to fragment shader
-    float texcoordX = vs_Pos.x / (u_Dimensions[0]  - 1.0f);
-    float texcoordY = vs_Pos.y / (u_Dimensions[1] - 1.0f);
-    fs_TextureCoord = vec2(pixelCoord.x, pixelCoord.y);
+    // float texcoordX = fs_Pos.x / (32.0  - 1.0f);
+    // float texcoordY = fs_Pos.y / (32.0 - 1.0f);
+    float texcoordX = fs_Pos.x + 0.5;
+    float texcoordY = fs_Pos.y + 0.5;
+    fs_TextureCoord = vec2(texcoordX, texcoordY);
 
     gl_Position = pixelCoord;
     //gl_Position = u_ViewProj * vs_Pos;
