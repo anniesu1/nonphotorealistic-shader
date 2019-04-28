@@ -33,7 +33,6 @@ export class Texture {
   	// get a javascript image locally and load it. not instant but will auto-replace white pixel
   	const img = new Image();
     if(clampVert == 0) {
-      console.log('hello inside texture.ts 1');
     	img.onload = function() {
     		this.bindTex()
     		gl.texImage2D(gl.TEXTURE_2D, lvl, formatDst, img.width, img.height, 0, formatSrc, formatBit, img);
@@ -45,7 +44,6 @@ export class Texture {
   }
   else {
     img.onload = function() {
-      console.log('hello inside texture.ts 2');
       this.bindTex()
       gl.texImage2D(gl.TEXTURE_2D, lvl, formatDst, img.width, img.height, 0, formatSrc, formatBit, img);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -54,9 +52,7 @@ export class Texture {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     }.bind(this);
   }
-
     img.src = imgSource; // load the image
-    console.log('hello from end of texture.ts');
 
   }
 

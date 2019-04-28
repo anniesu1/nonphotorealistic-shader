@@ -33,7 +33,7 @@ vec4 screenToQuad(vec4 pos)
 void main()
 {
     fs_Col = vs_Col;
-    fs_Pos = vs_Pos;
+    // fs_Pos = vs_Pos;
     fs_Nor = vs_Nor;
 
     mat4 t = mat4(vs_Transform1, vs_Transform2, vs_Transform3, vs_Transform4);
@@ -49,9 +49,7 @@ void main()
     float texcoordY = fs_Pos.y + 0.5;
     fs_TextureCoord = vec2(texcoordX, texcoordY);
 
+    // Pass position to fragment shader
     gl_Position = pixelCoord;
-    //gl_Position = u_ViewProj * vs_Pos;
-
-    
-
+    fs_Pos = pixelCoord;
 }

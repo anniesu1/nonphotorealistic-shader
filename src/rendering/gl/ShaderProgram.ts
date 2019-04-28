@@ -49,6 +49,7 @@ class ShaderProgram {
   unifSampler1: WebGLUniformLocation;
   unifSampler2: WebGLUniformLocation;
   unifSampler3: WebGLUniformLocation;
+  unifColorImage: WebGLUniformLocation;
 
   unifShowPopulation: WebGLUniformLocation; // 0: false, 1: true
   unifShowTerrainGradient: WebGLUniformLocation;
@@ -92,6 +93,7 @@ class ShaderProgram {
     this.unifSampler1   = gl.getUniformLocation(this.prog, "u_BrushStroke1");
     this.unifSampler2   = gl.getUniformLocation(this.prog, "u_BrushStroke2");
     this.unifSampler3   = gl.getUniformLocation(this.prog, "u_BrushStroke3");
+    this.unifColorImage = gl.getUniformLocation(this.prog, 'u_ColorImage');
 
     this.unifShowPopulation = gl.getUniformLocation(this.prog, "u_ShowPopulation");
     this.unifShowTerrainGradient = gl.getUniformLocation(this.prog, "u_ShowTerrainGradient");

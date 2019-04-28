@@ -1,13 +1,13 @@
-import { vec2, vec3, mat4, quat } from "gl-matrix";
+import { vec2, vec3, vec4, mat4, quat } from "gl-matrix";
 
 class BrushStroke {
     pos: vec3;
     orientation: quat;
     scale: vec3;
     transform: mat4;
-    color: vec3;
+    color: vec4;
 
-    constructor(pos: vec3, orientation: quat, scale: vec3, color: vec3) {
+    constructor(pos: vec3, orientation: quat, scale: vec3, color: vec4) {
         this.pos = pos;
         this.orientation = orientation;
         this.scale = scale;

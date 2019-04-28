@@ -124,9 +124,13 @@ void main()
     vec3 b = vec3(0.5, 0.5, 0.5);
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
+    
     out_Col = texture(u_BrushStroke1, fs_TextureCoord) * fs_Col; //* pNoise(fs_TextureCoord, 10);
-    if (fs_Nor[2] >= 1.0f) {
-      out_Col = vec4(0.0, 1.0, 0.0, 1.0);
-    } 
-    out_Col = vec4(1.0, 0.0, 0.0, 1.0);
+
+    // Test for location of coord
+    // if (fs_Pos.x < 0.0) {
+    //   //out_Col = vec4(0.0, 1.0, 0.0, 1.0);
+    // } else {
+    //   //out_Col = vec4(0.0, 1.0, 1.0, 1.0);
+    // }
 }
