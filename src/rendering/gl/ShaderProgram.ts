@@ -227,7 +227,7 @@ class ShaderProgram {
 
     if (this.attrTranslate != -1 && d.bindTranslate()) {
       gl.enableVertexAttribArray(this.attrTranslate);
-      gl.vertexAttribPointer(this.attrTranslate, 3, gl.FLOAT, false, 0, 0); // TODO: pass in a mat4 of transformations
+      gl.vertexAttribPointer(this.attrTranslate, 3, gl.FLOAT, false, 0, 0); 
       gl.vertexAttribDivisor(this.attrTranslate, 1); // Advance 1 index in translate VBO for each drawn instance
     }
 

@@ -2,6 +2,7 @@
 precision highp float;
 
 uniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3;
+uniform vec3 u_Eye, u_Ref, u_Up;
 
 in vec4 fs_Col;
 in vec4 fs_Pos;
@@ -101,6 +102,10 @@ float pNoise(vec2 p, int res) {
     return nf*nf*nf*nf;
 }
 
+vec3 palette(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d ) {
+    return a + b*cos( 6.28318*(c*t+d) );
+}
+
 /*
 * Main
 */
@@ -115,6 +120,13 @@ void main()
     //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);
     //   return;
     // }
-    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * fs_Col;
-    // out_Col = vec4(1.0, 0.0, 0.0, 0.0);
+    vec3 a = vec3(0.5, 0.5, 0.5);
+    vec3 b = vec3(0.5, 0.5, 0.5);
+    vec3 c = vec3(2.0, 1.0, 0.0);
+    vec3 d = vec3(0.50, 0.20, 0.25);
+    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * fs_Col; //* pNoise(fs_TextureCoord, 10);
+    if (fs_Nor[2] >= 1.0f) {
+      out_Col = vec4(0.0, 1.0, 0.0, 1.0);
+    } 
+    out_Col = vec4(1.0, 0.0, 0.0, 1.0);
 }

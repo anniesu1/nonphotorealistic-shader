@@ -21,7 +21,7 @@ class Mesh extends Drawable {
   vertices: vec3[] = [];
   triangleAreas: number[] = [];
   expandedTriangleArr: number[] = [];
-  numParticles: number = 10000;
+  numParticles: number = 10;
   particles: vec3[] = [];
   //brushStrokes: BrushStroke[] = [];
 
@@ -171,9 +171,8 @@ class Mesh extends Drawable {
     this.objString = ""; // hacky clear
   }
 
-  setInstanceVBOs(offsets: Float32Array, colors: Float32Array, transform1: Float32Array,
-    transform2: Float32Array, transform3: Float32Array, transform4: Float32Array) {
-    this.offsets = offsets;
+  setInstanceVBOs(colors: Float32Array, transform1: Float32Array, transform2: Float32Array, 
+    transform3: Float32Array, transform4: Float32Array) {
     this.colors = colors;
     this.transform1 = transform1;
     this.transform2 = transform2;
@@ -199,6 +198,9 @@ class Mesh extends Drawable {
     gl.bufferData(gl.ARRAY_BUFFER, this.transform3, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTransform4);
     gl.bufferData(gl.ARRAY_BUFFER, this.transform4, gl.STATIC_DRAW);
+
+    // Print 
+    console.log('Set the instance VBOs in our mesh');
   }
 };
 

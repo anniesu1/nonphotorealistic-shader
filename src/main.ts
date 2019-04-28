@@ -33,9 +33,13 @@ let brushStroke1: Texture;
 let brushStroke2: Texture;
 let brushStroke3: Texture;
 
+// Reference pictures for the brush stroke
+const targetTextureWidth = 256;
+const targetTextureHeight = 256;
+let colorRef: WebGLTexture;
+
 // Transforms
 let brushT: mat4[] = [];
-
 
 // Misc.
 let time: number = 0.0;
@@ -55,9 +59,9 @@ function loadScene() {
       vec3.fromValues(1, 0, 0));
     brushT.push(temp.getTransformationMatrix());
   }
-  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 0));
+  //setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 0), square);
 
-  // Create textures 
+  // Create textures
   // TODO: why does it only work with 1 set brush stroke type?
   brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
   brushStroke2 = new Texture('../textures/brush_stroke_01.png', 0);
@@ -74,9 +78,15 @@ function loadScene() {
   // let transforms: mat4[] = [];
   // transforms.push(identity);
   // setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1));
+
+  // Create a dummy sphere
+  let identity: mat4 = mat4.create();
+  let transforms: mat4[] = [];
+  transforms.push(identity);
+  setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1), sphere);
 }
 
-function setTransformArrays(transforms: mat4[], col: vec4) {
+function setTransformArrays(transforms: mat4[], col: vec4, geom: any) {
   // Set up instanced rendering data arrays here.
   let colorsArray = [];
   let n: number = 100.0;
@@ -125,8 +135,8 @@ function setTransformArrays(transforms: mat4[], col: vec4) {
   let transform3: Float32Array = new Float32Array(transform3Array);
   let transform4: Float32Array = new Float32Array(transform4Array);
 
-  square.setInstanceVBOs(colors, transform1, transform2, transform3, transform4);
-  square.setNumInstances(transforms.length);
+  geom.setInstanceVBOs(colors, transform1, transform2, transform3, transform4);
+  geom.setNumInstances(transforms.length);
 }
 
 function main() {
@@ -141,7 +151,7 @@ function main() {
   // Add controls to the gui
   const gui = new DAT.GUI();
 
-  // get canvas and webgl context
+  // Get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
   const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
   // const gl = canvas.getContext("webgl2", {
@@ -159,15 +169,16 @@ function main() {
   loadScene();
 
   // Set up camera and shaders
-  const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, -2, 0));
+  const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+  // gl.enable(gl.BLEND);
+  // gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
   // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  // gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.DEPTH_TEST);
 
+  // Create shaders
   const instancedShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/instanced-frag.glsl')),
@@ -187,6 +198,19 @@ function main() {
   //   new Shader(gl.VERTEX_SHADER, require('./shaders/painterly-vert.glsl')),
   //   new Shader(gl.FRAGMENT_SHADER, require('./shaders/painterly-frag.glsl')),
   // ])
+
+  const normalShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/normal-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/normal-frag.glsl')),
+  ])
+
+  const lambertShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
+  ])
+
+  // Create references images for brush stroke attributes
+  colorRef = gl.createTexture();
 
   // Bind textures to shader
   flatShader.bindTexToUnit(flatShader.unifSampler1, brushStroke1, 0);
@@ -226,12 +250,12 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
 
-    // Render 
+    // Render pass
     renderer.render(camera, flatShader, [screenQuad]); // Sky
     // renderer.render(camera, instancedShader, [cube]);
     //renderer.render(camera, terrain3DShader, [plane]); // Ground
-    renderer.render(camera, instancedShader, [square]); // Roads
-    //renderer.render(camera, buildingShader, [cube]); // Buildings
+    //renderer.render(camera, instancedShader, [square]); // Brush strokes
+    renderer.render(camera, lambertShader, [sphere]);
 
     stats.end();
 
