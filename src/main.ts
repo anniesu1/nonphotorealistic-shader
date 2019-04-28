@@ -143,10 +143,10 @@ function main() {
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
-  // const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
-  const gl = canvas.getContext("webgl2", {
-    premultipliedAlpha: false  // Ask for non-premultiplied alpha
-  });
+  const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
+  // const gl = canvas.getContext("webgl2", {
+  //   premultipliedAlpha: false  // Ask for non-premultiplied alpha
+  // });
 
   if (!gl) {
     alert('WebGL 2 not supported!');
@@ -166,7 +166,7 @@ function main() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
   // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  gl.enable(gl.DEPTH_TEST);
+  // gl.enable(gl.DEPTH_TEST);
 
   const instancedShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
