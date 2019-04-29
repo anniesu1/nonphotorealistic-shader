@@ -1,8 +1,9 @@
 #version 300 es
 precision highp float;
 
-uniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3;
+uniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3, u_ColorRef;
 uniform vec3 u_Eye, u_Ref, u_Up;
+uniform vec2 u_Dimensions;
 
 in vec4 fs_Col;
 in vec4 fs_Pos;
@@ -120,13 +121,29 @@ void main()
     //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);
     //   return;
     // }
+
+    // vec2 uv = 0.5 * (fs_Pos.xy + vec2(1.0));
+    // uv.x *= u_Dimensions.x / u_Dimensions.y;
+    // uv.x -= 0.25 * u_Dimensions.x / u_Dimensions.y;
+    // uv.y *= 0.5;
+
+   // (2i + 1)/(2N)
+   vec2 uv = (2.0f * fs_Pos.xy) + vec2(1.0);
+   uv.x /= u_Dimensions[0];
+   uv.y /= u_Dimensions[1];
+   uv += vec2(0.5);
+   uv *= 2.0;
+
+
     vec3 a = vec3(0.5, 0.5, 0.5);
     vec3 b = vec3(0.5, 0.5, 0.5);
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
-    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * fs_Col; //* pNoise(fs_TextureCoord, 10);
-    // if (fs_Nor[2] >= 1.0f) {
+    vec4 lambertCol = texture(u_ColorRef, fs_Pos.xy);
+    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * lambertCol * fs_Col; //* pNoise(fs_TextureCoord, 10);
+    // if (uv[0] >= 1.5f) {
     //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);
-    // } 
-    // out_Col = vec4(1.0, 0.0, 0.0, 1.0);
+    // } else {
+    //   out_Col = vec4(1.0, 0.0, 1.0, 1.0);
+    // }
 }

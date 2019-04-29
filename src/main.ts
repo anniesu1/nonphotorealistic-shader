@@ -291,7 +291,7 @@ function main() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
-    //instancedShader.setColorRef();
+    instancedShader.setColorRef();
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
     gl.disable(gl.DEPTH_TEST);

@@ -50,6 +50,7 @@ void main()
     fs_TextureCoord = vec2(texcoordX, texcoordY);
 
     gl_Position = pixelCoord;
+    fs_Pos = pixelCoord;
     //gl_Position = u_ViewProj * vs_Pos;
 
     
