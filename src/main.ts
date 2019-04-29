@@ -78,9 +78,14 @@ function loadScene() {
 
   // Create a dummy sphere
   let identity: mat4 = mat4.create();
-  let transforms: mat4[] = [];
-  transforms.push(identity);
-  setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1), sphere);
+  let sphereT: mat4[] = [];
+  sphereT.push(identity);
+  setTransformArrays(sphereT, vec4.fromValues(1, 0, 0, 1), sphere);
+
+  // Create a few lotuses
+  let lotusT: mat4[] = [];
+  lotusT.push(identity);
+  setTransformArrays(lotusT, vec4.fromValues(242.0 / 255.0, 174.0 / 255.0, 192.0 / 255.0, 1.0), lotus);
 }
 
 function setTransformArrays(transforms: mat4[], col: vec4, geom: any) {
@@ -204,7 +209,8 @@ function main() {
   // Set the plane pos
   terrain3DShader.setPlanePos(vec2.fromValues(0, -100));
 
-  // Set up brush strokes 
+  // Set up brush strokes:
+
   // Sort the particles by their z-value before getting their transforms and vbo data
   sphere.particles.sort(function(a, b) {
     // Sort by using the dot product between the camera's z axis and the particle position
@@ -221,26 +227,28 @@ function main() {
   });
   lotus.particles.sort(function(a, b) {
     let sub1: vec3 = vec3.create();
+    let dot1: number = vec3.dot(camera.forward, a);
     let distance1: number = vec3.sqrLen(vec3.subtract(sub1, a, camera.position));
     
     let sub2: vec3 = vec3.create();
+    let dot2: number = vec3.dot(camera.forward, b);
     let distance2: number = vec3.sqrLen(vec3.subtract(sub2, b, camera.position));
 
-    return (distance2 - distance1);
+    return (dot2 - dot1);
   });
 
-  for (let i = 0; i < sphere.particles.length; i++) {
-    // For each particle in the sphere mesh, create a brush stroke
-    let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
-      vec3.fromValues(1, 0, 0));
-    brushT.push(temp.getTransformationMatrix());
-  }
-
-  // for (let i = 0; i < lotus.particles.length; i++) {
-  //   let brush: BrushStroke = new BrushStroke(lotus.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
-  //   vec3.fromValues(0, 0, 1));
-  //   brushT.push(brush.getTransformationMatrix());
+  // for (let i = 0; i < sphere.particles.length; i++) {
+  //   // For each particle in the sphere mesh, create a brush stroke
+  //   let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
+  //     vec3.fromValues(1, 0, 0));
+  //   brushT.push(temp.getTransformationMatrix());
   // }
+
+  for (let i = 0; i < lotus.particles.length; i++) {
+    let brush: BrushStroke = new BrushStroke(lotus.particles[i], quat.create(), vec3.fromValues(0.05, 0.05, 0.05),
+    vec3.fromValues(0, 0, 1));
+    brushT.push(brush.getTransformationMatrix());
+  }
   setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
 
   // Render pass to fill the color reference texture
@@ -261,7 +269,7 @@ function main() {
   console.log('textureData: ' + textureData.length);
 
   // Look up the color of each particle
-  // TODO: is this necessary ? 
+  // TODO: is this necessary ? NO 
 
   // *** NEW TEXTURE SET-UP ***
   // Instantiate textures, fbs, rbs
@@ -319,7 +327,7 @@ function main() {
     // Render 3D Scene with Color:
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
-    renderer.render(camera, lambertShader, [sphere]);
+    renderer.render(camera, lambertShader, [lotus]);
 
     /*
        2. Brush Strokes
@@ -330,9 +338,9 @@ function main() {
     instancedShader.setColorRef();
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);//gl.ONE, gl.ONE); // Additive blending
-    // gl.disable(gl.DEPTH_TEST);
+    // gl.blendFunc(gl.ONE, gl.ONE);
     renderer.render(camera, instancedShader, [square]); // Brush strokes
-    // renderer.render(camera, lambertShader, [sphere]);
+    // renderer.render(camera, lambertShader, [lotus]);
 
     stats.end();
 

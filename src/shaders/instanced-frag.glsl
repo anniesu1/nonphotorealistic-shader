@@ -149,4 +149,10 @@ void main()
     vec4 testCol = vec4(1.0, 0.5 * (fs_Pos.xy + vec2(1.0)), 1.0); // TEST
     vec4 finalColor = texture(u_BrushStroke1, fs_TextureCoord);
     out_Col = vec4(finalColor.rgb * lambertCol.rgb, finalColor.a);
+    // out_Col = finalColor * lambertCol;
+
+    // Get rid of black outlines
+    if (out_Col.xyz == vec3(0.0, 0.0, 0.0)) {
+      out_Col = vec4(1.0, 1.0, 1.0, 0.0);
+    }
 }
