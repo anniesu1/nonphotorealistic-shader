@@ -37,6 +37,8 @@ let brushStroke3: Texture;
 const targetTextureWidth = 256;
 const targetTextureHeight = 256;
 let colorRef: WebGLTexture;
+let fbColor: WebGLFramebuffer;
+let rbColor: WebGLRenderbuffer;
 
 // Transforms
 let brushT: mat4[] = [];
@@ -59,13 +61,12 @@ function loadScene() {
       vec3.fromValues(1, 0, 0));
     brushT.push(temp.getTransformationMatrix());
   }
-  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 0), square);
+  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
 
   // Create textures
-  // TODO: why does it only work with 1 set brush stroke type?
   brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
-  brushStroke2 = new Texture('../textures/brush_stroke_01.png', 0);
-  brushStroke3 = new Texture('../textures/brush_stroke_01.png', 0);
+  brushStroke2 = new Texture('../textures/brush_stroke_02.png', 0);
+  brushStroke3 = new Texture('../textures/brush_stroke_03.png', 0);
 
   // Create background
   screenQuad = new ScreenQuad();
@@ -194,46 +195,75 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/terrain-frag.glsl')),
   ])
 
-  // const painterlyShader = new ShaderProgram([
-  //   new Shader(gl.VERTEX_SHADER, require('./shaders/painterly-vert.glsl')),
-  //   new Shader(gl.FRAGMENT_SHADER, require('./shaders/painterly-frag.glsl')),
-  // ])
-
   const lambertShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/lambert-frag.glsl')),
   ])
 
-  // Create references images for brush stroke attributes
-  colorRef = gl.createTexture();
-
   // Bind textures to shader
-  flatShader.bindTexToUnit(flatShader.unifSampler1, brushStroke1, 0);
-  flatShader.bindTexToUnit(flatShader.unifSampler2, brushStroke2, 0);
-  flatShader.bindTexToUnit(flatShader.unifSampler3, brushStroke3, 0);
+  instancedShader.bindTexToUnit(instancedShader.unifSampler1, brushStroke1, 0);
+  instancedShader.bindTexToUnit(instancedShader.unifSampler2, brushStroke2, 1);
+  instancedShader.bindTexToUnit(instancedShader.unifSampler3, brushStroke3, 2);
+  // flatShader.bindTexToUnit(flatShader.unifSampler1, brushStroke1, 0);
+  // flatShader.bindTexToUnit(flatShader.unifSampler2, brushStroke2, 1);
+  // flatShader.bindTexToUnit(flatShader.unifSampler3, brushStroke3, 2);
 
   // Set the plane pos
   terrain3DShader.setPlanePos(vec2.fromValues(0, -100));
 
-  // *** Render pass to fill our texture ***
-  const textureShader = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/terrain-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/terrain-frag.glsl')),
-  ]);
+  // Render pass to fill the color reference texture
+  // const texturecanvas = canvas;
+  // const textureRenderer = new OpenGLRenderer(texturecanvas);
+  // if (textureRenderer == null) {
+  //   console.log('texture renderer null');
+  // }
 
-  const texturecanvas = canvas;
-  const textureRenderer = new OpenGLRenderer(texturecanvas);
-  if (textureRenderer == null) {
-    console.log('texture renderer null');
+  // const width = window.innerWidth;
+  // const height = window.innerHeight;
+
+  // textureRenderer.setSize(width, height);
+  // textureRenderer.setClearColor(0, 0, 0, 1);
+  // let textureData: Uint8Array = textureRenderer.renderTexture(camera, lambertShader, [sphere]);
+  // console.log('width: ' + width);
+  // console.log('height: ' + height);
+  // console.log('textureData: ' + textureData.length);
+
+  // *** NEW TEXTURE SET-UP ***
+  // Instantiate textures, fbs, rbs
+  //createTextures();
+  colorRef = gl.createTexture();
+
+  // // createFrameBuffers();
+  fbColor = gl.createFramebuffer();
+
+  // // createRenderbuffers();
+  rbColor = gl.createRenderbuffer();
+
+  function textureSetup() {
+    const texWidth = window.innerWidth;
+    const texHeight = window.innerHeight;
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, texWidth, texHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);   
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);   
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);   
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);   
   }
 
-  // Resolution for the L-system
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  function fbrbSetup(texture: WebGLTexture, fb: WebGLFramebuffer, rb: WebGLRenderbuffer) {
+    const texWidth = window.innerWidth;
+    const texHeight = window.innerHeight;
 
-  textureRenderer.setSize(width, height);
-  textureRenderer.setClearColor(0, 0, 0, 1);
-  let textureData: Uint8Array = textureRenderer.renderTexture(camera, textureShader, [plane]);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, texWidth, texHeight);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    gl.drawBuffers([gl.COLOR_ATTACHMENT0]);
+    if(gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
+      console.log("error");
+    }
+    gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  }
+
 
   // *** TICK FUNCTION *** This function will be called every frame
   function tick() {
@@ -245,10 +275,26 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
 
-    // Render pass
-    renderer.render(camera, flatShader, [screenQuad]); // Sky
-    // renderer.render(camera, instancedShader, [cube]);
-    //renderer.render(camera, terrain3DShader, [plane]); // Ground
+    // 1. Color reference image with simple lambert shading
+    renderer.render(camera, flatShader, [screenQuad]);
+
+    gl.bindTexture(gl.TEXTURE_2D, colorRef);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbColor);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, rbColor);  
+    // Setup texture, fb, rb
+    textureSetup();
+    fbrbSetup(colorRef, fbColor, rbColor);  
+    // Render 3D Scene with Color:
+    renderer.render(camera, lambertShader, [sphere]);
+
+    // // 2. Brush Strokes
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, colorRef);
+    //instancedShader.setColorRef();
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+    gl.disable(gl.DEPTH_TEST);
     renderer.render(camera, instancedShader, [square]); // Brush strokes
     // renderer.render(camera, lambertShader, [sphere]);
 
