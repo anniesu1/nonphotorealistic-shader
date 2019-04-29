@@ -142,6 +142,9 @@ void main()
     vec3 b = vec3(0.5, 0.5, 0.5);
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
+
+    // Jitter the screen space position a bit
+    float noise = noise(fs_ScreenSpace01, 5.2); 
     vec4 lambertCol = texture(u_ColorRef, fs_ScreenSpace01);
     lambertCol[3] = 1.0;
 

@@ -207,13 +207,17 @@ function main() {
   // Set up brush strokes 
   // Sort the particles by their z-value before getting their transforms and vbo data
   sphere.particles.sort(function(a, b) {
+    // Sort by using the dot product between the camera's z axis and the particle position
     let sub1: vec3 = vec3.create();
+    let dot1: number = vec3.dot(camera.forward, a);
     let distance1: number = vec3.sqrLen(vec3.subtract(sub1, a, camera.position));
     
     let sub2: vec3 = vec3.create();
+    let dot2: number = vec3.dot(camera.forward, b);
     let distance2: number = vec3.sqrLen(vec3.subtract(sub2, b, camera.position));
 
-    return (distance2 - distance1);
+    // return (distance2 - distance1);
+    return dot2 - dot1;
   });
   lotus.particles.sort(function(a, b) {
     let sub1: vec3 = vec3.create();
