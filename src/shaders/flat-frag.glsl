@@ -199,5 +199,5 @@ void main() {
     // out_Col = vec4(0.0, 0.0, 0.0, 1.0);
 
       out_Col = vec4(0.5 * (fs_Pos + vec2(1.0)), 0.0, 1.0);
-
+    out_Col = vec4(0.2, 0.2, 0.24, 1.0);
 }

@@ -21,7 +21,7 @@ class Mesh extends Drawable {
   vertices: vec3[] = [];
   triangleAreas: number[] = [];
   expandedTriangleArr: number[] = [];
-  numParticles: number = 10000;
+  numParticles: number = 100000;
   particles: vec3[] = [];
   //brushStrokes: BrushStroke[] = [];
 

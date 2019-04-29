@@ -27,6 +27,8 @@ let plane: Plane;
 let cube: Cube;
 let sphereObj: string = readTextFile('./src/sphere.obj');
 let sphere: Mesh;
+let lotusObj: string = readTextFile('./src/lotus.obj');
+let lotus: Mesh;
 
 // Textures
 let brushStroke1: Texture;
@@ -54,6 +56,8 @@ function loadScene() {
   cube.create();
   sphere = new Mesh(sphereObj, vec3.fromValues(0.0, 0.0, 0.0));
   sphere.create();
+  lotus = new Mesh(lotusObj, vec3.fromValues(2, -2, 0));
+  lotus.create();
 
   // Create textures
   brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
@@ -196,9 +200,6 @@ function main() {
   instancedShader.bindTexToUnit(instancedShader.unifSampler1, brushStroke1, 0);
   instancedShader.bindTexToUnit(instancedShader.unifSampler2, brushStroke2, 1);
   instancedShader.bindTexToUnit(instancedShader.unifSampler3, brushStroke3, 2);
-  // flatShader.bindTexToUnit(flatShader.unifSampler1, brushStroke1, 0);
-  // flatShader.bindTexToUnit(flatShader.unifSampler2, brushStroke2, 1);
-  // flatShader.bindTexToUnit(flatShader.unifSampler3, brushStroke3, 2);
 
   // Set the plane pos
   terrain3DShader.setPlanePos(vec2.fromValues(0, -100));
@@ -213,7 +214,16 @@ function main() {
     let distance2: number = vec3.sqrLen(vec3.subtract(sub2, b, camera.position));
 
     return (distance2 - distance1);
-  })
+  });
+  lotus.particles.sort(function(a, b) {
+    let sub1: vec3 = vec3.create();
+    let distance1: number = vec3.sqrLen(vec3.subtract(sub1, a, camera.position));
+    
+    let sub2: vec3 = vec3.create();
+    let distance2: number = vec3.sqrLen(vec3.subtract(sub2, b, camera.position));
+
+    return (distance2 - distance1);
+  });
 
   for (let i = 0; i < sphere.particles.length; i++) {
     // For each particle in the sphere mesh, create a brush stroke
@@ -221,6 +231,12 @@ function main() {
       vec3.fromValues(1, 0, 0));
     brushT.push(temp.getTransformationMatrix());
   }
+
+  // for (let i = 0; i < lotus.particles.length; i++) {
+  //   let brush: BrushStroke = new BrushStroke(lotus.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
+  //   vec3.fromValues(0, 0, 1));
+  //   brushT.push(brush.getTransformationMatrix());
+  // }
   setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
 
   // Render pass to fill the color reference texture
@@ -307,7 +323,7 @@ function main() {
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
     instancedShader.setColorRef();
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);//gl.ONE, gl.ONE); // Additive blending
     // gl.disable(gl.DEPTH_TEST);
     renderer.render(camera, instancedShader, [square]); // Brush strokes
     // renderer.render(camera, lambertShader, [sphere]);
