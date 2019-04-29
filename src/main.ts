@@ -285,6 +285,8 @@ function main() {
     textureSetup();
     fbrbSetup(colorRef, fbColor, rbColor);  
     // Render 3D Scene with Color:
+    gl.disable(gl.BLEND);
+    gl.enable(gl.DEPTH_TEST);
     renderer.render(camera, lambertShader, [sphere]);
 
     // // 2. Brush Strokes

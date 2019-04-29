@@ -9,6 +9,7 @@ in vec4 fs_Col;
 in vec4 fs_Pos;
 in vec2 fs_TextureCoord;
 in vec4 fs_Nor;
+in vec2 fs_ScreenSpace01;
 
 out vec4 out_Col;
 
@@ -128,6 +129,8 @@ void main()
     // uv.y *= 0.5;
 
    // (2i + 1)/(2N)
+   // TODO: confirm that these UV coordinates are correct 
+   // We are transforming from pixel space to uv space
    vec2 uv = (2.0f * fs_Pos.xy) + vec2(1.0);
    uv.x /= u_Dimensions[0];
    uv.y /= u_Dimensions[1];
@@ -139,8 +142,8 @@ void main()
     vec3 b = vec3(0.5, 0.5, 0.5);
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
-    vec4 lambertCol = texture(u_ColorRef, fs_Pos.xy);
-    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * lambertCol * fs_Col; //* pNoise(fs_TextureCoord, 10);
+    vec4 lambertCol = texture(u_ColorRef, fs_ScreenSpace01);
+    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * lambertCol; //* pNoise(fs_TextureCoord, 10);
     // if (uv[0] >= 1.5f) {
     //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);
     // } else {

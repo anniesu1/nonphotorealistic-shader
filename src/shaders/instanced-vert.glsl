@@ -22,6 +22,7 @@ out vec4 fs_Col;
 out vec4 fs_Pos;
 out vec4 fs_Nor;
 out vec2 fs_TextureCoord;
+out vec2 fs_ScreenSpace01;
 
 // We are assuming dimensions for map are 1000x1000
 vec4 screenToQuad(vec4 pos) 
@@ -50,6 +51,10 @@ void main()
     fs_TextureCoord = vec2(texcoordX, texcoordY);
 
     gl_Position = pixelCoord;
+    vec3 ndc = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+    vec2 viewportCoord = ndc.xy * 0.5 + 0.5; //ndc is -1 to 1 in GL. scale for 0 to 1
+    fs_ScreenSpace01 = viewportCoord;
+
     fs_Pos = pixelCoord;
     //gl_Position = u_ViewProj * vs_Pos;
 
