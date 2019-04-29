@@ -55,14 +55,6 @@ function loadScene() {
   sphere = new Mesh(sphereObj, vec3.fromValues(0.0, 0.0, 0.0));
   sphere.create();
 
-  for (let i = 0; i < sphere.particles.length; i++) {
-    // For each particle in the sphere mesh, create a brush stroke
-    let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
-      vec3.fromValues(1, 0, 0));
-    brushT.push(temp.getTransformationMatrix());
-  }
-  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
-
   // Create textures
   brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
   brushStroke2 = new Texture('../textures/brush_stroke_02.png', 0);
@@ -211,6 +203,26 @@ function main() {
   // Set the plane pos
   terrain3DShader.setPlanePos(vec2.fromValues(0, -100));
 
+  // Set up brush strokes 
+  // Sort the particles by their z-value before getting their transforms and vbo data
+  sphere.particles.sort(function(a, b) {
+    let sub1: vec3 = vec3.create();
+    let distance1: number = vec3.sqrLen(vec3.subtract(sub1, a, camera.position));
+    
+    let sub2: vec3 = vec3.create();
+    let distance2: number = vec3.sqrLen(vec3.subtract(sub2, b, camera.position));
+
+    return (distance2 - distance1);
+  })
+
+  for (let i = 0; i < sphere.particles.length; i++) {
+    // For each particle in the sphere mesh, create a brush stroke
+    let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
+      vec3.fromValues(1, 0, 0));
+    brushT.push(temp.getTransformationMatrix());
+  }
+  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
+
   // Render pass to fill the color reference texture
   // const texturecanvas = canvas;
   // const textureRenderer = new OpenGLRenderer(texturecanvas);
@@ -296,7 +308,7 @@ function main() {
     instancedShader.setColorRef();
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
-    gl.disable(gl.DEPTH_TEST);
+    // gl.disable(gl.DEPTH_TEST);
     renderer.render(camera, instancedShader, [square]); // Brush strokes
     // renderer.render(camera, lambertShader, [sphere]);
 

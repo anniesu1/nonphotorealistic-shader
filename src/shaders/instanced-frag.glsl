@@ -143,7 +143,8 @@ void main()
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
     vec4 lambertCol = texture(u_ColorRef, fs_ScreenSpace01);
-    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * lambertCol; //* pNoise(fs_TextureCoord, 10);
+    lambertCol[3] = 1.0;
+    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * fs_Col; // * lambertCol * pNoise(fs_TextureCoord, 10);
     // if (uv[0] >= 1.5f) {
     //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);
     // } else {
