@@ -49,6 +49,7 @@ class ShaderProgram {
   unifSampler1: WebGLUniformLocation;
   unifSampler2: WebGLUniformLocation;
   unifSampler3: WebGLUniformLocation;
+  unifColorRef: WebGLUniformLocation;
 
   unifShowPopulation: WebGLUniformLocation; // 0: false, 1: true
   unifShowTerrainGradient: WebGLUniformLocation;
@@ -92,6 +93,7 @@ class ShaderProgram {
     this.unifSampler1   = gl.getUniformLocation(this.prog, "u_BrushStroke1");
     this.unifSampler2   = gl.getUniformLocation(this.prog, "u_BrushStroke2");
     this.unifSampler3   = gl.getUniformLocation(this.prog, "u_BrushStroke3");
+    this.unifColorRef   = gl.getUniformLocation(this.prog, "u_ColorRef");
 
     this.unifShowPopulation = gl.getUniformLocation(this.prog, "u_ShowPopulation");
     this.unifShowTerrainGradient = gl.getUniformLocation(this.prog, "u_ShowTerrainGradient");
@@ -112,6 +114,13 @@ class ShaderProgram {
     gl.activeTexture(gl.TEXTURE0 + unit);
     tex.bindTex();
     gl.uniform1i(handleName, unit);
+  }
+
+  setColorRef() {
+    this.use();
+    if (this.unifColorRef !== -1) {
+      gl.uniform1i(this.unifColorRef, 3);
+    }
   }
 
   setTextureCoord(coord: vec2) {
