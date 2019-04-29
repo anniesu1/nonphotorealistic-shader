@@ -143,16 +143,10 @@ void main()
     vec3 c = vec3(2.0, 1.0, 0.0);
     vec3 d = vec3(0.50, 0.20, 0.25);
 
-    // Jitter the screen space position a bit
-    float noise = noise(fs_ScreenSpace01, 5.2); 
     vec4 lambertCol = texture(u_ColorRef, fs_ScreenSpace01);
     lambertCol[3] = 1.0;
 
     vec4 testCol = vec4(1.0, 0.5 * (fs_Pos.xy + vec2(1.0)), 1.0); // TEST
-    out_Col = texture(u_BrushStroke1, fs_TextureCoord) * lambertCol; // pNoise(fs_TextureCoord, 10);
-    // if (uv[0] >= 1.5f) {
-    //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);
-    // } else {
-    //   out_Col = vec4(1.0, 0.0, 1.0, 1.0);
-    // }
+    vec4 finalColor = texture(u_BrushStroke1, fs_TextureCoord);
+    out_Col = vec4(finalColor.rgb * lambertCol.rgb, finalColor.a);
 }

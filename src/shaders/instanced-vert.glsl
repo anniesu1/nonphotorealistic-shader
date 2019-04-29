@@ -42,6 +42,7 @@ void main()
     //newPos = screenToQuad(newPos);
     //newPos = vec4(newPos.x * 50.0, 0.1, newPos.z * 50.0, 1.0);
     vec4 pixelCoord = u_ViewProj * newPos;
+    vec4 strokeCenter = u_ViewProj * vs_Transform4;
 
     // Pass texture sample position to fragment shader
     // float texcoordX = fs_Pos.x / (32.0  - 1.0f);
@@ -51,7 +52,7 @@ void main()
     fs_TextureCoord = vec2(texcoordX, texcoordY);
 
     gl_Position = pixelCoord;
-    vec3 ndc = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+    vec3 ndc = strokeCenter.xyz / strokeCenter.w; //perspective divide/normalize
     vec2 viewportCoord = ndc.xy * 0.5 + 0.5; //ndc is -1 to 1 in GL. scale for 0 to 1
     fs_ScreenSpace01 = viewportCoord;
 

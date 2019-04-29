@@ -169,7 +169,7 @@ function main() {
   const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0, 0, 0));
 
   const renderer = new OpenGLRenderer(canvas);
-  renderer.setClearColor(0.2, 0.2, 0.2, 1);
+  renderer.setClearColor(0.0, 0.0, 0.0, 0.0);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
   // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -244,31 +244,29 @@ function main() {
   setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
 
   // Render pass to fill the color reference texture
-  // const texturecanvas = canvas;
-  // const textureRenderer = new OpenGLRenderer(texturecanvas);
-  // if (textureRenderer == null) {
-  //   console.log('texture renderer null');
-  // }
+  const texturecanvas = canvas;
+  const textureRenderer = new OpenGLRenderer(texturecanvas);
+  if (textureRenderer == null) {
+    console.log('texture renderer null');
+  }
 
-  // const width = window.innerWidth;
-  // const height = window.innerHeight;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
-  // textureRenderer.setSize(width, height);
-  // textureRenderer.setClearColor(0, 0, 0, 1);
-  // let textureData: Uint8Array = textureRenderer.renderTexture(camera, lambertShader, [sphere]);
-  // console.log('width: ' + width);
-  // console.log('height: ' + height);
-  // console.log('textureData: ' + textureData.length);
+  textureRenderer.setSize(width, height);
+  textureRenderer.setClearColor(0, 0, 0, 0.0);
+  let textureData: Uint8Array = textureRenderer.renderTexture(camera, lambertShader, [sphere]);
+  console.log('width: ' + width);
+  console.log('height: ' + height);
+  console.log('textureData: ' + textureData.length);
+
+  // Look up the color of each particle
+  // TODO: is this necessary ? 
 
   // *** NEW TEXTURE SET-UP ***
   // Instantiate textures, fbs, rbs
-  //createTextures();
   colorRef = gl.createTexture();
-
-  // // createFrameBuffers();
   fbColor = gl.createFramebuffer();
-
-  // // createRenderbuffers();
   rbColor = gl.createRenderbuffer();
 
   function textureSetup() {
@@ -307,7 +305,9 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
 
-    // 1. Color reference image with simple lambert shading
+    /*
+      1. Color reference image with simple lambert shading
+    */
     renderer.render(camera, flatShader, [screenQuad]);
 
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
@@ -321,7 +321,9 @@ function main() {
     gl.enable(gl.DEPTH_TEST);
     renderer.render(camera, lambertShader, [sphere]);
 
-    // // 2. Brush Strokes
+    /*
+       2. Brush Strokes
+     */
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
