@@ -59,7 +59,7 @@ function loadScene() {
       vec3.fromValues(1, 0, 0));
     brushT.push(temp.getTransformationMatrix());
   }
-  //setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 0), square);
+  setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 0), square);
 
   // Create textures
   // TODO: why does it only work with 1 set brush stroke type?
@@ -173,10 +173,10 @@ function main() {
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(0.2, 0.2, 0.2, 1);
-  // gl.enable(gl.BLEND);
-  // gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE); // Additive blending
   // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  gl.enable(gl.DEPTH_TEST);
+  // gl.enable(gl.DEPTH_TEST);
 
   // Create shaders
   const instancedShader = new ShaderProgram([
@@ -198,11 +198,6 @@ function main() {
   //   new Shader(gl.VERTEX_SHADER, require('./shaders/painterly-vert.glsl')),
   //   new Shader(gl.FRAGMENT_SHADER, require('./shaders/painterly-frag.glsl')),
   // ])
-
-  const normalShader = new ShaderProgram([
-    new Shader(gl.VERTEX_SHADER, require('./shaders/normal-vert.glsl')),
-    new Shader(gl.FRAGMENT_SHADER, require('./shaders/normal-frag.glsl')),
-  ])
 
   const lambertShader = new ShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/lambert-vert.glsl')),
@@ -254,8 +249,8 @@ function main() {
     renderer.render(camera, flatShader, [screenQuad]); // Sky
     // renderer.render(camera, instancedShader, [cube]);
     //renderer.render(camera, terrain3DShader, [plane]); // Ground
-    //renderer.render(camera, instancedShader, [square]); // Brush strokes
-    renderer.render(camera, lambertShader, [sphere]);
+    renderer.render(camera, instancedShader, [square]); // Brush strokes
+    // renderer.render(camera, lambertShader, [sphere]);
 
     stats.end();
 
