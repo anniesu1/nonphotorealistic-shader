@@ -150,10 +150,10 @@ function main() {
 
   // Get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
-  const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
-  // const gl = canvas.getContext("webgl2", {
-  //   premultipliedAlpha: false  // Ask for non-premultiplied alpha
-  // });
+  // const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
+  const gl = canvas.getContext("webgl2", {
+    alpha: false  // Ask for non-premultiplied alpha
+  });
 
   if (!gl) {
     alert('WebGL 2 not supported!');
@@ -254,7 +254,7 @@ function main() {
   const height = window.innerHeight;
 
   textureRenderer.setSize(width, height);
-  textureRenderer.setClearColor(0, 0, 0, 0.0);
+  textureRenderer.setClearColor(0.0, 0.0, 0.0, 0.0);
   let textureData: Uint8Array = textureRenderer.renderTexture(camera, lambertShader, [sphere]);
   console.log('width: ' + width);
   console.log('height: ' + height);
