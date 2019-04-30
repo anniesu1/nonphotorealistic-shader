@@ -300,11 +300,6 @@ function main() {
     console.log('texture renderer null');
   }
 
- 
-
-  // Look up the color of each particle
-  // TODO: is this necessary ? NO 
-
   // *** NEW TEXTURE SET-UP ***
   // Instantiate textures, fbs, rbs
   colorRef = gl.createTexture();
@@ -336,6 +331,11 @@ function main() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
+  // Set flags so we know whether to redraw the LSystem or not
+  let flagNumParticles = controls["particles per mesh"];
+  let flagBrushStrokeType = controls["brush stroke texture"];
+  let flagBrushStrokeSize = controls["brush stroke size"];
+
 
   // *** TICK FUNCTION *** This function will be called every frame
   function tick() {
@@ -351,17 +351,26 @@ function main() {
       1. Color reference image with simple lambert shading
     */
     renderer.render(camera, flatShader, [screenQuad]);
-
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbColor);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, rbColor);  
-    // Setup texture, fb, rb
+    gl.bindRenderbuffer(gl.RENDERBUFFER, rbColor);
+
+    // Set up the texture, frame buffer, and render buffer 
     textureSetup();
     fbrbSetup(colorRef, fbColor, rbColor);  
-    // Render 3D Scene with Color:
+
+    // Render the scene with basic lambertian lighting to a texture
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
     renderer.render(camera, lambertShader, [sphere, lotus]);
+
+    // Check if flags have changed and if particles need to be re-sorted
+    if (flagBrushStrokeType != controls["brush stroke texture"]) {
+      // Pass to shader the new selected brush stroke
+      
+      // Update
+      flagBrushStrokeType = controls["brush stroke texture"];
+    }
 
     /*
        2. Brush Strokes
@@ -369,7 +378,7 @@ function main() {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
-    instancedShader.setColorRef();
+    instancedShader.setColorRef(); // Bind previous color reference to the shader
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);//gl.ONE, gl.ONE); // Additive blending
     // gl.blendFunc(gl.ONE, gl.ONE);
