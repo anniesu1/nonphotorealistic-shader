@@ -42,8 +42,6 @@ let brushStroke2: Texture;
 let brushStroke3: Texture;
 
 // Reference pictures for the brush stroke
-const targetTextureWidth = 256;
-const targetTextureHeight = 256;
 let colorRef: WebGLTexture;
 let fbColor: WebGLFramebuffer;
 let rbColor: WebGLRenderbuffer;
@@ -187,7 +185,7 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
-  gui.add(controls, 'particles per mesh', 10, 100000);
+  gui.add(controls, 'particles per mesh', 100000, 100000);
   gui.add(controls, "brush stroke texture", [0, 1, 2]);
   gui.add(controls, 'brush stroke size', 0.05, 5.0);
 
@@ -332,7 +330,6 @@ function main() {
   }
 
   // Set flags so we know whether to redraw the LSystem or not
-  let flagNumParticles = controls["particles per mesh"];
   let flagBrushStrokeType = controls["brush stroke texture"];
   let flagBrushStrokeSize = controls["brush stroke size"];
 
