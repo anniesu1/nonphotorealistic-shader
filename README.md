@@ -4,7 +4,8 @@
 https://anniesu1.github.io/nonphotorealistic-shader/
 
 ### Overview
-This is a painterly shader. It is based on the paper [Painterly Rendering for Animation](http://delivery.acm.org/10.1145/240000/237288/p477-meier.pdf?ip=165.123.195.131&id=237288&acc=ACTIVE%20SERVICE&key=A792924B58C015C1%2E18947888DF2D0EEA%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&__acm__=1556383516_87d96d94f943037c41015bc624025f33)
+![](final.png)
+This is a painterly shader. It is based on the paper [Painterly Rendering for Animation](http://delivery.acm.org/10.1145/240000/237288/p477-meier.pdf?ip=165.123.195.131&id=237288&acc=ACTIVE%20SERVICE&key=A792924B58C015C1%2E18947888DF2D0EEA%2E4D4702B0C3E38B35%2E4D4702B0C3E38B35&__acm__=1556383516_87d96d94f943037c41015bc624025f33). I drew inspiration from impressionistic paintings of water lilies for my final scene set-up. 
 
 ### Implementation Details
 __PARTICLE PLACEMENT THROUGHOUT A MESH__
@@ -23,7 +24,11 @@ __BRUSH STROKES__
 * Brush stroke attributes:
   * Size: random
   * Orientation: currently uniform
-  * Color: the color of a brush stroke is based on a reference image. The reference image consists of a lambertian shading of the original mesh. This reference image is stored as a texture that is then passed to the instanced shader, which looks up the color for the brush stroke. 
+  * Color: the color of a brush stroke is based on a reference image. The reference image consists of a lambertian shading of the original mesh. This reference image is stored as a texture that is then passed to the instanced shader, which looks up the color using computed uv coordinates for the brush stroke. Note that each brush stroke takes on exactly _one_ color. This allows for successful shading "over the edges" of the mesh. 
+* The user can select out of 3 different brush stroke textures and can also tune the brush stroke size. 
+
+__ASIDE__
+* The scene is relatively simple, since as more meshes and instances of meshes are added, the number of particles is increased linearly. However, each mesh consists of 1000000 particles, so this does wind up significantly slowing down the frame rate.
 
 ### Write-up for milestone
 
@@ -37,11 +42,11 @@ and i plan to work on, in the following order:
 * note: i think i'm scrapping my original idea of doing a forgery of a spirited away gif because i'd rather have the artistic freedom to create something new. please let me know if there may be issues with me wanting to create my own custom scene ! and sorry for the tumultuousness. 
 
 ### Resources
-_papers_
+__Papers__
 - painterly rendering for animation by meier (3d) - http://www.eecs.umich.edu/courses/eecs498-2/papers/meier96.pdf
 - painterly rendering with curved brush strokes of multiple sizes (for images only, not 3d) - https://www.mrl.nyu.edu/publications/painterly98/
 
-_misc_
+__Misc__
 - cmu slides - http://graphics.cs.cmu.edu/nsp/course/15-462/Spring04/slides/21-npr.pdf
 - computer vision techniques - https://www.cs.utah.edu/~shirley/papers/painting.pdf
 - review of existing painterly approaches - https://onlinelibrary.wiley.com/doi/full/10.1002/cav.1435
