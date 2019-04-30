@@ -28,13 +28,10 @@ let square: Square; // Brush stroke
 let screenQuad: ScreenQuad;
 let plane: Plane;
 let cube: Cube;
-let sphereObj: string = readTextFile('./src/sphere.obj');
+let sphereObj: string = readTextFile('./src/obj/sphere.obj');
 let sphere: Mesh;
-let lotusObj: string = readTextFile('./src/lotus.obj');
+let lotusObj: string = readTextFile('./src/obj/lotus.obj');
 let lotus: Mesh;
-let lotus1: Mesh;
-let lotus2: Mesh;
-let lotus3: Mesh;
 
 // Textures
 let brushStroke1: Texture;
@@ -62,15 +59,11 @@ function loadScene() {
   sphere.create();
   lotus = new Mesh(lotusObj, vec3.fromValues(2, -2, 0), controls["particles per mesh"]);
   lotus.create();
-  lotus2 = new Mesh(lotusObj, vec3.fromValues(0, 0, 0), controls["particles per mesh"]);
-  lotus2.create();
-  lotus3 = new Mesh(lotusObj, vec3.fromValues(0, 0, 0), controls["particles per mesh"]);
-  lotus3.create();
   
   // Create textures
-  brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
-  brushStroke2 = new Texture('../textures/brush_stroke_02.png', 0);
-  brushStroke3 = new Texture('../textures/brush_stroke_03.png', 0);
+  brushStroke1 = new Texture('./src/textures/brush_stroke_01.png', 0);
+  brushStroke2 = new Texture('./src/textures/brush_stroke_02.png', 0);
+  brushStroke3 = new Texture('./src/textures/brush_stroke_03.png', 0);
 
   // Create background
   screenQuad = new ScreenQuad();

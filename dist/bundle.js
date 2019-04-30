@@ -6106,20 +6106,15 @@ let square; // Brush stroke
 let screenQuad;
 let plane;
 let cube;
-let sphereObj = Object(__WEBPACK_IMPORTED_MODULE_8__globals__["b" /* readTextFile */])('./src/sphere.obj');
+let sphereObj = Object(__WEBPACK_IMPORTED_MODULE_8__globals__["b" /* readTextFile */])('./src/obj/sphere.obj');
 let sphere;
-let lotusObj = Object(__WEBPACK_IMPORTED_MODULE_8__globals__["b" /* readTextFile */])('./src/lotus.obj');
+let lotusObj = Object(__WEBPACK_IMPORTED_MODULE_8__globals__["b" /* readTextFile */])('./src/obj/lotus.obj');
 let lotus;
-let lotus1;
-let lotus2;
-let lotus3;
 // Textures
 let brushStroke1;
 let brushStroke2;
 let brushStroke3;
 // Reference pictures for the brush stroke
-const targetTextureWidth = 256;
-const targetTextureHeight = 256;
 let colorRef;
 let fbColor;
 let rbColor;
@@ -6137,10 +6132,6 @@ function loadScene() {
     sphere.create();
     lotus = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(2, -2, 0), controls["particles per mesh"]);
     lotus.create();
-    lotus2 = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0), controls["particles per mesh"]);
-    lotus2.create();
-    lotus3 = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0), controls["particles per mesh"]);
-    lotus3.create();
     // Create textures
     brushStroke1 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_01.png', 0);
     brushStroke2 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_02.png', 0);
@@ -6240,7 +6231,7 @@ function main() {
     document.body.appendChild(stats.domElement);
     // Add controls to the gui
     const gui = new __WEBPACK_IMPORTED_MODULE_2_dat_gui__["GUI"]();
-    gui.add(controls, 'particles per mesh', 10, 100000);
+    gui.add(controls, 'particles per mesh', 100000, 100000);
     gui.add(controls, "brush stroke texture", [0, 1, 2]);
     gui.add(controls, 'brush stroke size', 0.05, 5.0);
     // Get canvas and webgl context
@@ -6357,7 +6348,6 @@ function main() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
     // Set flags so we know whether to redraw the LSystem or not
-    let flagNumParticles = controls["particles per mesh"];
     let flagBrushStrokeType = controls["brush stroke texture"];
     let flagBrushStrokeSize = controls["brush stroke size"];
     // *** TICK FUNCTION *** This function will be called every frame
@@ -6386,8 +6376,28 @@ function main() {
         // Check if flags have changed and if particles need to be re-sorted
         if (flagBrushStrokeType != controls["brush stroke texture"]) {
             // Pass to shader the new selected brush stroke
+            instancedShader.setSelectedBrush(controls["brush stroke texture"]);
             // Update
             flagBrushStrokeType = controls["brush stroke texture"];
+        }
+        if (flagBrushStrokeSize != controls["brush stroke size"]) {
+            // Re-render all brush strokes with the appropriate 
+            let inputSize = controls["brush stroke size"];
+            let brushStrokeSize = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(inputSize, inputSize, inputSize);
+            brushT = []; // Clear
+            for (let i = 0; i < sphere.particles.length; i++) {
+                // For each particle in the sphere mesh, create a brush stroke
+                let temp = new __WEBPACK_IMPORTED_MODULE_12__painterly_BrushStroke__["a" /* default */](sphere.particles[i], __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* quat */].create(), brushStrokeSize, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(1, 0, 0));
+                brushT.push(temp.getTransformationMatrix());
+            }
+            for (let i = 0; i < lotus.particles.length; i++) {
+                // For each particle in the lotus mesh, create a brush stroke
+                let brush = new __WEBPACK_IMPORTED_MODULE_12__painterly_BrushStroke__["a" /* default */](lotus.particles[i], __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* quat */].create(), brushStrokeSize, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 1));
+                brushT.push(brush.getTransformationMatrix());
+            }
+            setTransformArrays(brushT, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["f" /* vec4 */].fromValues(1, 0, 0, 1), square);
+            // Update
+            flagBrushStrokeSize = controls["brush stroke size"];
         }
         /*
            2. Brush Strokes
@@ -16876,6 +16886,7 @@ class ShaderProgram {
         this.unifUp = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_Up");
         this.unifPlanePos = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_PlanePos");
         this.unifDimensions = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_Dimensions");
+        this.unifSelectedBrush = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_SelectedBrush");
         this.unifSampler1 = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_BrushStroke1");
         this.unifSampler2 = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_BrushStroke2");
         this.unifSampler3 = __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].getUniformLocation(this.prog, "u_BrushStroke3");
@@ -16896,6 +16907,12 @@ class ShaderProgram {
         __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].activeTexture(__WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].TEXTURE0 + unit);
         tex.bindTex();
         __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].uniform1i(handleName, unit);
+    }
+    setSelectedBrush(selected) {
+        this.use();
+        if (this.unifSelectedBrush !== -1) {
+            __WEBPACK_IMPORTED_MODULE_1__globals__["a" /* gl */].uniform1f(this.unifSelectedBrush, selected);
+        }
     }
     setColorRef() {
         this.use();
@@ -17421,7 +17438,7 @@ module.exports = "#version 300 es\n\nuniform mat4 u_ViewProj;\nuniform float u_T
 /* 76 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\nprecision highp float;\n\nuniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3, u_ColorRef;\nuniform vec3 u_Eye, u_Ref, u_Up;\nuniform vec2 u_Dimensions;\n\nin vec4 fs_Col;\nin vec4 fs_Pos;\nin vec2 fs_TextureCoord;\nin vec4 fs_Nor;\nin vec2 fs_ScreenSpace01;\n\nout vec4 out_Col;\n\n/*\n * Noise functions\n */\n\nfloat random1( vec2 p , vec2 seed) {\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\n}\n\nfloat random1( vec3 p , vec3 seed) {\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\n}\n\nvec2 random2( vec2 p , vec2 seed) {\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\n}\n\nfloat randv(vec2 n) {\n  float v = (fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453));\n  return v;\n}\n\nfloat interpNoise2D(vec2 p) {\n    float intX = floor(p.x);\n    float intY = floor(p.y);\n    float fractX = fract(p.x);\n    float fractY = fract(p.y);\n\n    float v1 = randv(vec2(intX,intY));\n    float v2 = randv(vec2(intX + 1.0,intY));\n    float v3 = randv(vec2(intX,intY + 1.0));\n    float v4 = randv(vec2(intX + 1.0,intY + 1.0));\n\n    float i1 = mix(v1, v2, fractX);\n    float i2 = mix(v3, v4, fractX);\n\n    return mix(i1, i2, fractY);\n}\n\n// Normal fbm\nfloat fbm(vec2 p, float persistence, int octaves) {\n    p /= 10.0f; // higher divisor = less variability of land; lower = really random/jumpy\n    float total = 0.0;\n\n    float counter = 0.0;\n    for (int i = 0; i < octaves; i++) {\n        float freq = pow(2.0, counter);\n        float amp = pow(persistence, counter);\n        total += interpNoise2D(vec2(p.x * freq, p.y * freq)) * amp;\n        counter++;\n    }\n    return total;\n}\n\n/* noise() and pNoise() from https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83 */\nfloat noise(vec2 p, float freq){\n    float unit = 64.0/freq; // TODO: is 64.0 the proper width?\n    vec2 ij = floor(p / unit);\n    vec2 xy = mod(p , unit) / unit;\n    //xy = 3.*xy*xy-2.*xy*xy*xy;\n    float x = .5*(1.-cos(3.141592653589 * xy[0]));\n    float y = .5*(1.-cos(3.141592653589 * xy[1]));\n    xy = vec2(x, y);\n    float a = randv((ij + vec2(0.0, 0.0)));\n    float b = randv((ij + vec2(1.0, 0.0)));\n    float c = randv((ij + vec2(0.0, 1.0)));\n    float d = randv((ij + vec2(1.0, 1.0)));\n    float x1 = mix(a, b, xy.x);\n    float x2 = mix(c, d, xy.x);\n    return mix(x1, x2, xy.y);\n}\n\n// Perlin noise function\nfloat pNoise(vec2 p, int res) {\n    float persistance = .5;\n    float n = 0.;\n    float normK = 0.;\n    float f = 4.;\n    float amp = 1.;\n    int iCount = 0;\n    for (int i = 0; i<50; i++){\n        n+=amp*noise(p, f);\n        f*=2.;\n        normK+=amp;\n        amp*=persistance;\n        if (iCount == res) break;\n        iCount++;\n    }\n    float nf = n/normK;\n    return nf*nf*nf*nf;\n}\n\nvec3 palette(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d ) {\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\n/*\n* Main\n*/\nvoid main()\n{\n    float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\n    //out_Col = fs_Col;\n    // if (texColor == vec4(0.0, 0.0, 0.0, 1.0)) {\n    //   out_Col = vec4(0.0, 0.0, 0.0, 0.0);\n    //   return;\n    // } else if (texColor == vec4(0.0, 0.0, 0.0, 0.0)) {\n    //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);\n    //   return;\n    // }\n\n    // vec2 uv = 0.5 * (fs_Pos.xy + vec2(1.0));\n    // uv.x *= u_Dimensions.x / u_Dimensions.y;\n    // uv.x -= 0.25 * u_Dimensions.x / u_Dimensions.y;\n    // uv.y *= 0.5;\n\n   // (2i + 1)/(2N)\n   // TODO: confirm that these UV coordinates are correct \n   // We are transforming from pixel space to uv space\n   vec2 uv = (2.0f * fs_Pos.xy) + vec2(1.0);\n   uv.x /= u_Dimensions[0];\n   uv.y /= u_Dimensions[1];\n   uv += vec2(0.5);\n   uv *= 2.0;\n\n\n    vec3 a = vec3(0.5, 0.5, 0.5);\n    vec3 b = vec3(0.5, 0.5, 0.5);\n    vec3 c = vec3(2.0, 1.0, 0.0);\n    vec3 d = vec3(0.50, 0.20, 0.25);\n\n    vec4 lambertCol = texture(u_ColorRef, fs_ScreenSpace01);\n    lambertCol[3] = 1.0;\n\n    vec4 testCol = vec4(1.0, 0.5 * (fs_Pos.xy + vec2(1.0)), 1.0); // TEST\n    vec4 finalColor = texture(u_BrushStroke1, fs_TextureCoord);\n    out_Col = vec4(finalColor.rgb * lambertCol.rgb, finalColor.a);\n    // out_Col = finalColor * lambertCol;\n\n    // Get rid of black outlines\n    if (out_Col.xyz == vec3(0.0, 0.0, 0.0)) {\n      out_Col = vec4(1.0, 1.0, 1.0, 0.0);\n    }\n}\n"
+module.exports = "#version 300 es\nprecision highp float;\n\nuniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3, u_ColorRef;\nuniform vec3 u_Eye, u_Ref, u_Up;\nuniform vec2 u_Dimensions;\nuniform highp float u_SelectedBrush;\n\nin vec4 fs_Col;\nin vec4 fs_Pos;\nin vec2 fs_TextureCoord;\nin vec4 fs_Nor;\nin vec2 fs_ScreenSpace01;\n\nout vec4 out_Col;\n\n/*\n * Noise functions\n */\n\nfloat random1( vec2 p , vec2 seed) {\n  return fract(sin(dot(p + seed, vec2(127.1, 311.7))) * 43758.5453);\n}\n\nfloat random1( vec3 p , vec3 seed) {\n  return fract(sin(dot(p + seed, vec3(987.654, 123.456, 531.975))) * 85734.3545);\n}\n\nvec2 random2( vec2 p , vec2 seed) {\n  return fract(sin(vec2(dot(p + seed, vec2(311.7, 127.1)), dot(p + seed, vec2(269.5, 183.3)))) * 85734.3545);\n}\n\nfloat randv(vec2 n) {\n  float v = (fract(cos(dot(n, vec2(12.9898, 4.1414))) * 43758.5453));\n  return v;\n}\n\nfloat interpNoise2D(vec2 p) {\n    float intX = floor(p.x);\n    float intY = floor(p.y);\n    float fractX = fract(p.x);\n    float fractY = fract(p.y);\n\n    float v1 = randv(vec2(intX,intY));\n    float v2 = randv(vec2(intX + 1.0,intY));\n    float v3 = randv(vec2(intX,intY + 1.0));\n    float v4 = randv(vec2(intX + 1.0,intY + 1.0));\n\n    float i1 = mix(v1, v2, fractX);\n    float i2 = mix(v3, v4, fractX);\n\n    return mix(i1, i2, fractY);\n}\n\n// Normal fbm\nfloat fbm(vec2 p, float persistence, int octaves) {\n    p /= 10.0f; // higher divisor = less variability of land; lower = really random/jumpy\n    float total = 0.0;\n\n    float counter = 0.0;\n    for (int i = 0; i < octaves; i++) {\n        float freq = pow(2.0, counter);\n        float amp = pow(persistence, counter);\n        total += interpNoise2D(vec2(p.x * freq, p.y * freq)) * amp;\n        counter++;\n    }\n    return total;\n}\n\n/* noise() and pNoise() from https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83 */\nfloat noise(vec2 p, float freq){\n    float unit = 64.0/freq; // TODO: is 64.0 the proper width?\n    vec2 ij = floor(p / unit);\n    vec2 xy = mod(p , unit) / unit;\n    //xy = 3.*xy*xy-2.*xy*xy*xy;\n    float x = .5*(1.-cos(3.141592653589 * xy[0]));\n    float y = .5*(1.-cos(3.141592653589 * xy[1]));\n    xy = vec2(x, y);\n    float a = randv((ij + vec2(0.0, 0.0)));\n    float b = randv((ij + vec2(1.0, 0.0)));\n    float c = randv((ij + vec2(0.0, 1.0)));\n    float d = randv((ij + vec2(1.0, 1.0)));\n    float x1 = mix(a, b, xy.x);\n    float x2 = mix(c, d, xy.x);\n    return mix(x1, x2, xy.y);\n}\n\n// Perlin noise function\nfloat pNoise(vec2 p, int res) {\n    float persistance = .5;\n    float n = 0.;\n    float normK = 0.;\n    float f = 4.;\n    float amp = 1.;\n    int iCount = 0;\n    for (int i = 0; i<50; i++){\n        n+=amp*noise(p, f);\n        f*=2.;\n        normK+=amp;\n        amp*=persistance;\n        if (iCount == res) break;\n        iCount++;\n    }\n    float nf = n/normK;\n    return nf*nf*nf*nf;\n}\n\nvec3 palette(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d ) {\n    return a + b*cos( 6.28318*(c*t+d) );\n}\n\n/*\n* Main\n*/\nvoid main()\n{\n    float dist = 1.0 - (length(fs_Pos.xyz) * 2.0);\n    //out_Col = fs_Col;\n    // if (texColor == vec4(0.0, 0.0, 0.0, 1.0)) {\n    //   out_Col = vec4(0.0, 0.0, 0.0, 0.0);\n    //   return;\n    // } else if (texColor == vec4(0.0, 0.0, 0.0, 0.0)) {\n    //   out_Col = vec4(0.0, 1.0, 0.0, 1.0);\n    //   return;\n    // }\n\n    // vec2 uv = 0.5 * (fs_Pos.xy + vec2(1.0));\n    // uv.x *= u_Dimensions.x / u_Dimensions.y;\n    // uv.x -= 0.25 * u_Dimensions.x / u_Dimensions.y;\n    // uv.y *= 0.5;\n\n   // (2i + 1)/(2N)\n   // TODO: confirm that these UV coordinates are correct \n   // We are transforming from pixel space to uv space\n   vec2 uv = (2.0f * fs_Pos.xy) + vec2(1.0);\n   uv.x /= u_Dimensions[0];\n   uv.y /= u_Dimensions[1];\n   uv += vec2(0.5);\n   uv *= 2.0;\n\n\n    vec3 a = vec3(0.5, 0.5, 0.5);\n    vec3 b = vec3(0.5, 0.5, 0.5);\n    vec3 c = vec3(2.0, 1.0, 0.0);\n    vec3 d = vec3(0.50, 0.20, 0.25);\n\n    vec4 lambertCol = texture(u_ColorRef, fs_ScreenSpace01);\n    lambertCol[3] = 1.0;\n\n    vec4 testCol = vec4(1.0, 0.5 * (fs_Pos.xy + vec2(1.0)), 1.0); // TEST\n    vec4 finalColor;\n    if (u_SelectedBrush == 0.0) {\n      finalColor = texture(u_BrushStroke1, fs_TextureCoord);\n    } else if (u_SelectedBrush == 1.0) {\n      finalColor = texture(u_BrushStroke2, fs_TextureCoord);\n    } else {\n      finalColor = texture(u_BrushStroke3, fs_TextureCoord);\n    }\n    out_Col = vec4(finalColor.rgb * lambertCol.rgb, finalColor.a);\n    // out_Col = finalColor * lambertCol;\n\n    // Get rid of black outlines\n    if (out_Col.xyz == vec3(0.0, 0.0, 0.0)) {\n      out_Col = vec4(1.0, 1.0, 1.0, 0.0);\n    }\n}\n"
 
 /***/ }),
 /* 77 */
