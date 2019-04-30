@@ -21,17 +21,18 @@ class Mesh extends Drawable {
   vertices: vec3[] = [];
   triangleAreas: number[] = [];
   expandedTriangleArr: number[] = [];
-  numParticles: number = 100000;
+  numParticles: number;
   particles: vec3[] = [];
   //brushStrokes: BrushStroke[] = [];
 
   objString: string;
 
-  constructor(objString: string, center: vec3) {
+  constructor(objString: string, center: vec3, numParticles: number) {
     super(); // Call the constructor of the super class. This is required.
     this.center = vec4.fromValues(center[0], center[1], center[2], 1);
 
     this.objString = objString;
+    this.numParticles = numParticles;
   }
 
   create() {  

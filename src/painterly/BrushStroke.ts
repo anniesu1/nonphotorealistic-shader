@@ -30,8 +30,6 @@ class BrushStroke {
         // Scale
         let S: mat4 = mat4.create();
         mat4.fromScaling(S, this.scale);
-        S[0] = 0.5;
-        S[5] = 0.5;
 
         // Multiply together to form transformation matrix
         let transformation: mat4 = mat4.create();

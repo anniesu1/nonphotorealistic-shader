@@ -18,6 +18,9 @@ import Plane from './geometry/Plane';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
+  "particles per mesh": 100000,
+  "brush stroke texture": 0,
+  "brush stroke size": 0.25
 };
 
 // Geometry
@@ -29,6 +32,9 @@ let sphereObj: string = readTextFile('./src/sphere.obj');
 let sphere: Mesh;
 let lotusObj: string = readTextFile('./src/lotus.obj');
 let lotus: Mesh;
+let lotus1: Mesh;
+let lotus2: Mesh;
+let lotus3: Mesh;
 
 // Textures
 let brushStroke1: Texture;
@@ -54,11 +60,15 @@ function loadScene() {
   square.create();
   cube = new Cube(vec3.fromValues(0, 0, 0));
   cube.create();
-  sphere = new Mesh(sphereObj, vec3.fromValues(0.0, 0.0, 0.0));
+  sphere = new Mesh(sphereObj, vec3.fromValues(0.0, 0.0, 0.0), controls["particles per mesh"]);
   sphere.create();
-  lotus = new Mesh(lotusObj, vec3.fromValues(2, -2, 0));
+  lotus = new Mesh(lotusObj, vec3.fromValues(2, -2, 0), controls["particles per mesh"]);
   lotus.create();
-
+  lotus2 = new Mesh(lotusObj, vec3.fromValues(0, 0, 0), controls["particles per mesh"]);
+  lotus2.create();
+  lotus3 = new Mesh(lotusObj, vec3.fromValues(0, 0, 0), controls["particles per mesh"]);
+  lotus3.create();
+  
   // Create textures
   brushStroke1 = new Texture('../textures/brush_stroke_01.png', 0);
   brushStroke2 = new Texture('../textures/brush_stroke_02.png', 0);
@@ -76,16 +86,41 @@ function loadScene() {
   // transforms.push(identity);
   // setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1));
 
-  // Create a dummy sphere
-  let identity: mat4 = mat4.create();
+  // Create a sphere to represent a lily pad
   let sphereT: mat4[] = [];
-  sphereT.push(identity);
-  setTransformArrays(sphereT, vec4.fromValues(1, 0, 0, 1), sphere);
+  let sphereT1: mat4 = mat4.create();
+  mat4.rotateX(sphereT1, sphereT1, -Math.PI / 2.0);
+  mat4.scale(sphereT1, sphereT1, vec3.fromValues(1, 1, 0.2));
+  sphereT.push(sphereT1);
+  setTransformArrays(sphereT, vec4.fromValues(10.0 / 255.0, 130.0 / 255.0, 94.0 / 255.0, 1.0), sphere);
 
-  // Create a few lotuses
+  // Create a lotus
   let lotusT: mat4[] = [];
+  let identity: mat4 = mat4.create();
   lotusT.push(identity);
   setTransformArrays(lotusT, vec4.fromValues(242.0 / 255.0, 174.0 / 255.0, 192.0 / 255.0, 1.0), lotus);
+}
+
+// Should get its own transformation matrix
+function getTransformationMatrix(pos: vec3, orientation: quat, scale: vec3) : mat4 {
+  // Translate
+  let T: mat4 = mat4.create();
+  mat4.fromTranslation(T, pos); 
+
+  // Rotate
+  let R: mat4 = mat4.create();
+  mat4.fromQuat(R, orientation);
+
+  // Scale
+  let S: mat4 = mat4.create();
+  mat4.fromScaling(S, scale);
+  S[0] = 0.5;
+  S[5] = 0.5;
+
+  // Multiply together to form transformation matrix
+  let transformation: mat4 = mat4.create();
+  mat4.multiply(transformation, R, S);
+  return mat4.multiply(transformation, T, transformation);
 }
 
 function setTransformArrays(transforms: mat4[], col: vec4, geom: any) {
@@ -152,6 +187,9 @@ function main() {
 
   // Add controls to the gui
   const gui = new DAT.GUI();
+  gui.add(controls, 'particles per mesh', 10, 100000);
+  gui.add(controls, "brush stroke texture", [0, 1, 2]);
+  gui.add(controls, 'brush stroke size', 0.05, 5.0);
 
   // Get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -237,16 +275,20 @@ function main() {
     return (dot2 - dot1);
   });
 
-  // for (let i = 0; i < sphere.particles.length; i++) {
-  //   // For each particle in the sphere mesh, create a brush stroke
-  //   let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
-  //     vec3.fromValues(1, 0, 0));
-  //   brushT.push(temp.getTransformationMatrix());
-  // }
+  let inputSize: number = controls["brush stroke size"];
+  let brushStrokeSize: vec3 = vec3.fromValues(inputSize, inputSize, inputSize);
+
+  for (let i = 0; i < sphere.particles.length; i++) {
+    // For each particle in the sphere mesh, create a brush stroke
+    let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), brushStrokeSize,
+      vec3.fromValues(1, 0, 0));
+    brushT.push(temp.getTransformationMatrix());
+  }
 
   for (let i = 0; i < lotus.particles.length; i++) {
-    let brush: BrushStroke = new BrushStroke(lotus.particles[i], quat.create(), vec3.fromValues(0.05, 0.05, 0.05),
-    vec3.fromValues(0, 0, 1));
+    // For each particle in the lotus mesh, create a brush stroke
+    let brush: BrushStroke = new BrushStroke(lotus.particles[i], quat.create(), brushStrokeSize,
+      vec3.fromValues(0, 0, 1));
     brushT.push(brush.getTransformationMatrix());
   }
   setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
@@ -258,15 +300,7 @@ function main() {
     console.log('texture renderer null');
   }
 
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  textureRenderer.setSize(width, height);
-  textureRenderer.setClearColor(0.0, 0.0, 0.0, 0.0);
-  let textureData: Uint8Array = textureRenderer.renderTexture(camera, lambertShader, [sphere]);
-  console.log('width: ' + width);
-  console.log('height: ' + height);
-  console.log('textureData: ' + textureData.length);
+ 
 
   // Look up the color of each particle
   // TODO: is this necessary ? NO 
@@ -327,7 +361,7 @@ function main() {
     // Render 3D Scene with Color:
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
-    renderer.render(camera, lambertShader, [lotus]);
+    renderer.render(camera, lambertShader, [sphere, lotus]);
 
     /*
        2. Brush Strokes
@@ -340,7 +374,7 @@ function main() {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);//gl.ONE, gl.ONE); // Additive blending
     // gl.blendFunc(gl.ONE, gl.ONE);
     renderer.render(camera, instancedShader, [square]); // Brush strokes
-    // renderer.render(camera, lambertShader, [lotus]);
+    // renderer.render(camera, lambertShader, [sphere]);
 
     stats.end();
 
