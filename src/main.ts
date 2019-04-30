@@ -72,6 +72,7 @@ function loadScene() {
   plane.create();
 
   // Create a dummy square
+  // need to commit
   // let identity: mat4 = mat4.create();
   // let transforms: mat4[] = [];
   // transforms.push(identity);
