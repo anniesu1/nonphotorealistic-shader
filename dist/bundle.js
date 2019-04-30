@@ -6133,9 +6133,9 @@ function loadScene() {
     lotus = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(2, -2, 0), controls["particles per mesh"]);
     lotus.create();
     // Create textures
-    brushStroke1 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_01.png', 0);
-    brushStroke2 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_02.png', 0);
-    brushStroke3 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_03.png', 0);
+    brushStroke1 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('./src/textures/brush_stroke_01.png', 0);
+    brushStroke2 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('./src/textures/brush_stroke_02.png', 0);
+    brushStroke3 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('./src/textures/brush_stroke_03.png', 0);
     // Create background
     screenQuad = new __WEBPACK_IMPORTED_MODULE_4__geometry_ScreenQuad__["a" /* default */]();
     screenQuad.create();
