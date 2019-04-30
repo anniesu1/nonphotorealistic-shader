@@ -45,6 +45,7 @@ class ShaderProgram {
   unifUp: WebGLUniformLocation;
   unifDimensions: WebGLUniformLocation;
   unifPlanePos: WebGLUniformLocation;
+  unifSelectedBrush: WebGLUniformLocation;
 
   unifSampler1: WebGLUniformLocation;
   unifSampler2: WebGLUniformLocation;
@@ -89,6 +90,7 @@ class ShaderProgram {
     this.unifUp   = gl.getUniformLocation(this.prog, "u_Up");
     this.unifPlanePos = gl.getUniformLocation(this.prog, "u_PlanePos");
     this.unifDimensions = gl.getUniformLocation(this.prog, "u_Dimensions");
+    this.unifSelectedBrush = gl.getUniformLocation(this.prog, "u_SelectedBrush");
 
     this.unifSampler1   = gl.getUniformLocation(this.prog, "u_BrushStroke1");
     this.unifSampler2   = gl.getUniformLocation(this.prog, "u_BrushStroke2");
@@ -114,6 +116,13 @@ class ShaderProgram {
     gl.activeTexture(gl.TEXTURE0 + unit);
     tex.bindTex();
     gl.uniform1i(handleName, unit);
+  }
+
+  setSelectedBrush(selected: number) {
+    this.use();
+    if (this.unifSelectedBrush !== -1) {
+      gl.uniform1f(this.unifSelectedBrush, selected);
+    }
   }
 
   setColorRef() {

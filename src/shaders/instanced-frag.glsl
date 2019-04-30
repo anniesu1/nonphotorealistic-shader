@@ -4,6 +4,7 @@ precision highp float;
 uniform sampler2D u_BrushStroke1, u_BrushStroke2, u_BrushStroke3, u_ColorRef;
 uniform vec3 u_Eye, u_Ref, u_Up;
 uniform vec2 u_Dimensions;
+uniform highp float u_SelectedBrush;
 
 in vec4 fs_Col;
 in vec4 fs_Pos;
@@ -147,7 +148,14 @@ void main()
     lambertCol[3] = 1.0;
 
     vec4 testCol = vec4(1.0, 0.5 * (fs_Pos.xy + vec2(1.0)), 1.0); // TEST
-    vec4 finalColor = texture(u_BrushStroke1, fs_TextureCoord);
+    vec4 finalColor;
+    if (u_SelectedBrush == 0.0) {
+      finalColor = texture(u_BrushStroke1, fs_TextureCoord);
+    } else if (u_SelectedBrush == 1.0) {
+      finalColor = texture(u_BrushStroke2, fs_TextureCoord);
+    } else {
+      finalColor = texture(u_BrushStroke3, fs_TextureCoord);
+    }
     out_Col = vec4(finalColor.rgb * lambertCol.rgb, finalColor.a);
     // out_Col = finalColor * lambertCol;
 

@@ -367,9 +367,34 @@ function main() {
     // Check if flags have changed and if particles need to be re-sorted
     if (flagBrushStrokeType != controls["brush stroke texture"]) {
       // Pass to shader the new selected brush stroke
-      
+      instancedShader.setSelectedBrush(controls["brush stroke texture"]);
+
       // Update
       flagBrushStrokeType = controls["brush stroke texture"];
+    }
+
+    if (flagBrushStrokeSize != controls["brush stroke size"]) {
+      // Re-render all brush strokes with the appropriate 
+      let inputSize: number = controls["brush stroke size"];
+      let brushStrokeSize: vec3 = vec3.fromValues(inputSize, inputSize, inputSize);
+      brushT = []; // Clear
+      for (let i = 0; i < sphere.particles.length; i++) {
+        // For each particle in the sphere mesh, create a brush stroke
+        let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), brushStrokeSize,
+          vec3.fromValues(1, 0, 0));
+        brushT.push(temp.getTransformationMatrix());
+      }
+    
+      for (let i = 0; i < lotus.particles.length; i++) {
+        // For each particle in the lotus mesh, create a brush stroke
+        let brush: BrushStroke = new BrushStroke(lotus.particles[i], quat.create(), brushStrokeSize,
+          vec3.fromValues(0, 0, 1));
+        brushT.push(brush.getTransformationMatrix());
+      }
+      setTransformArrays(brushT, vec4.fromValues(1, 0, 0, 1), square);
+
+      // Update
+      flagBrushStrokeSize = controls["brush stroke size"];
     }
 
     /*
