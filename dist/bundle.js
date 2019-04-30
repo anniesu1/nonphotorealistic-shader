@@ -6096,7 +6096,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
-const controls = {};
+const controls = {
+    "particles per mesh": 100000,
+    "brush stroke texture": 0,
+    "brush stroke size": 0.25
+};
 // Geometry
 let square; // Brush stroke
 let screenQuad;
@@ -6106,6 +6110,9 @@ let sphereObj = Object(__WEBPACK_IMPORTED_MODULE_8__globals__["b" /* readTextFil
 let sphere;
 let lotusObj = Object(__WEBPACK_IMPORTED_MODULE_8__globals__["b" /* readTextFile */])('./src/lotus.obj');
 let lotus;
+let lotus1;
+let lotus2;
+let lotus3;
 // Textures
 let brushStroke1;
 let brushStroke2;
@@ -6126,10 +6133,14 @@ function loadScene() {
     square.create();
     cube = new __WEBPACK_IMPORTED_MODULE_5__geometry_Cube__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0));
     cube.create();
-    sphere = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](sphereObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, 0.0, 0.0));
+    sphere = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](sphereObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, 0.0, 0.0), controls["particles per mesh"]);
     sphere.create();
-    lotus = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(2, -2, 0));
+    lotus = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(2, -2, 0), controls["particles per mesh"]);
     lotus.create();
+    lotus2 = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0), controls["particles per mesh"]);
+    lotus2.create();
+    lotus3 = new __WEBPACK_IMPORTED_MODULE_11__geometry_Mesh__["a" /* default */](lotusObj, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0), controls["particles per mesh"]);
+    lotus3.create();
     // Create textures
     brushStroke1 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_01.png', 0);
     brushStroke2 = new __WEBPACK_IMPORTED_MODULE_10__rendering_gl_Texture__["a" /* default */]('../textures/brush_stroke_02.png', 0);
@@ -6144,15 +6155,36 @@ function loadScene() {
     // let transforms: mat4[] = [];
     // transforms.push(identity);
     // setTransformArrays(transforms, vec4.fromValues(1, 0, 0, 1));
-    // Create a dummy sphere
-    let identity = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
+    // Create a sphere to represent a lily pad
     let sphereT = [];
-    sphereT.push(identity);
-    setTransformArrays(sphereT, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["f" /* vec4 */].fromValues(1, 0, 0, 1), sphere);
-    // Create a few lotuses
+    let sphereT1 = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].rotateX(sphereT1, sphereT1, -Math.PI / 2.0);
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].scale(sphereT1, sphereT1, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(1, 1, 0.2));
+    sphereT.push(sphereT1);
+    setTransformArrays(sphereT, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["f" /* vec4 */].fromValues(10.0 / 255.0, 130.0 / 255.0, 94.0 / 255.0, 1.0), sphere);
+    // Create a lotus
     let lotusT = [];
+    let identity = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
     lotusT.push(identity);
     setTransformArrays(lotusT, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["f" /* vec4 */].fromValues(242.0 / 255.0, 174.0 / 255.0, 192.0 / 255.0, 1.0), lotus);
+}
+// Should get its own transformation matrix
+function getTransformationMatrix(pos, orientation, scale) {
+    // Translate
+    let T = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].fromTranslation(T, pos);
+    // Rotate
+    let R = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].fromQuat(R, orientation);
+    // Scale
+    let S = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].fromScaling(S, scale);
+    S[0] = 0.5;
+    S[5] = 0.5;
+    // Multiply together to form transformation matrix
+    let transformation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
+    __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].multiply(transformation, R, S);
+    return __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].multiply(transformation, T, transformation);
 }
 function setTransformArrays(transforms, col, geom) {
     // Set up instanced rendering data arrays here.
@@ -6208,6 +6240,9 @@ function main() {
     document.body.appendChild(stats.domElement);
     // Add controls to the gui
     const gui = new __WEBPACK_IMPORTED_MODULE_2_dat_gui__["GUI"]();
+    gui.add(controls, 'particles per mesh', 10, 100000);
+    gui.add(controls, "brush stroke texture", [0, 1, 2]);
+    gui.add(controls, 'brush stroke size', 0.05, 5.0);
     // Get canvas and webgl context
     const canvas = document.getElementById('canvas');
     // const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
@@ -6275,14 +6310,16 @@ function main() {
         let distance2 = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].sqrLen(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].subtract(sub2, b, camera.position));
         return (dot2 - dot1);
     });
-    // for (let i = 0; i < sphere.particles.length; i++) {
-    //   // For each particle in the sphere mesh, create a brush stroke
-    //   let temp: BrushStroke = new BrushStroke(sphere.particles[i], quat.create(), vec3.fromValues(1, 1, 1),
-    //     vec3.fromValues(1, 0, 0));
-    //   brushT.push(temp.getTransformationMatrix());
-    // }
+    let inputSize = controls["brush stroke size"];
+    let brushStrokeSize = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(inputSize, inputSize, inputSize);
+    for (let i = 0; i < sphere.particles.length; i++) {
+        // For each particle in the sphere mesh, create a brush stroke
+        let temp = new __WEBPACK_IMPORTED_MODULE_12__painterly_BrushStroke__["a" /* default */](sphere.particles[i], __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* quat */].create(), brushStrokeSize, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(1, 0, 0));
+        brushT.push(temp.getTransformationMatrix());
+    }
     for (let i = 0; i < lotus.particles.length; i++) {
-        let brush = new __WEBPACK_IMPORTED_MODULE_12__painterly_BrushStroke__["a" /* default */](lotus.particles[i], __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* quat */].create(), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.05, 0.05, 0.05), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 1));
+        // For each particle in the lotus mesh, create a brush stroke
+        let brush = new __WEBPACK_IMPORTED_MODULE_12__painterly_BrushStroke__["a" /* default */](lotus.particles[i], __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["c" /* quat */].create(), brushStrokeSize, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 1));
         brushT.push(brush.getTransformationMatrix());
     }
     setTransformArrays(brushT, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["f" /* vec4 */].fromValues(1, 0, 0, 1), square);
@@ -6292,16 +6329,6 @@ function main() {
     if (textureRenderer == null) {
         console.log('texture renderer null');
     }
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    textureRenderer.setSize(width, height);
-    textureRenderer.setClearColor(0.0, 0.0, 0.0, 0.0);
-    let textureData = textureRenderer.renderTexture(camera, lambertShader, [sphere]);
-    console.log('width: ' + width);
-    console.log('height: ' + height);
-    console.log('textureData: ' + textureData.length);
-    // Look up the color of each particle
-    // TODO: is this necessary ? NO 
     // *** NEW TEXTURE SET-UP ***
     // Instantiate textures, fbs, rbs
     colorRef = gl.createTexture();
@@ -6329,6 +6356,10 @@ function main() {
         gl.viewport(0, 0, window.innerWidth, window.innerHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     }
+    // Set flags so we know whether to redraw the LSystem or not
+    let flagNumParticles = controls["particles per mesh"];
+    let flagBrushStrokeType = controls["brush stroke texture"];
+    let flagBrushStrokeSize = controls["brush stroke size"];
     // *** TICK FUNCTION *** This function will be called every frame
     function tick() {
         camera.update();
@@ -6345,25 +6376,31 @@ function main() {
         gl.bindTexture(gl.TEXTURE_2D, colorRef);
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbColor);
         gl.bindRenderbuffer(gl.RENDERBUFFER, rbColor);
-        // Setup texture, fb, rb
+        // Set up the texture, frame buffer, and render buffer 
         textureSetup();
         fbrbSetup(colorRef, fbColor, rbColor);
-        // Render 3D Scene with Color:
+        // Render the scene with basic lambertian lighting to a texture
         gl.disable(gl.BLEND);
         gl.enable(gl.DEPTH_TEST);
-        renderer.render(camera, lambertShader, [lotus]);
+        renderer.render(camera, lambertShader, [sphere, lotus]);
+        // Check if flags have changed and if particles need to be re-sorted
+        if (flagBrushStrokeType != controls["brush stroke texture"]) {
+            // Pass to shader the new selected brush stroke
+            // Update
+            flagBrushStrokeType = controls["brush stroke texture"];
+        }
         /*
            2. Brush Strokes
          */
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.activeTexture(gl.TEXTURE3);
         gl.bindTexture(gl.TEXTURE_2D, colorRef);
-        instancedShader.setColorRef();
+        instancedShader.setColorRef(); // Bind previous color reference to the shader
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); //gl.ONE, gl.ONE); // Additive blending
         // gl.blendFunc(gl.ONE, gl.ONE);
         renderer.render(camera, instancedShader, [square]); // Brush strokes
-        // renderer.render(camera, lambertShader, [lotus]);
+        // renderer.render(camera, lambertShader, [sphere]);
         stats.end();
         // Tell the browser to call `tick` again whenever it renders a new frame
         requestAnimationFrame(tick);
@@ -17097,15 +17134,15 @@ class Texture {
 
 //import BrushStroke from '../painterly/BrushStroke';
 class Mesh extends __WEBPACK_IMPORTED_MODULE_1__rendering_gl_Drawable__["a" /* default */] {
-    constructor(objString, center) {
+    constructor(objString, center, numParticles) {
         super(); // Call the constructor of the super class. This is required.
         this.vertices = [];
         this.triangleAreas = [];
         this.expandedTriangleArr = [];
-        this.numParticles = 100000;
         this.particles = [];
         this.center = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["f" /* vec4 */].fromValues(center[0], center[1], center[2], 1);
         this.objString = objString;
+        this.numParticles = numParticles;
     }
     create() {
         // This way you will be able to at least see one mesh instance being drawn.
@@ -17285,8 +17322,6 @@ class BrushStroke {
         // Scale
         let S = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
         __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].fromScaling(S, this.scale);
-        S[0] = 0.5;
-        S[5] = 0.5;
         // Multiply together to form transformation matrix
         let transformation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].create();
         __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["b" /* mat4 */].multiply(transformation, R, S);
