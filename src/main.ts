@@ -395,8 +395,7 @@ function main() {
     gl.bindTexture(gl.TEXTURE_2D, colorRef);
     instancedShader.setColorRef(); // Bind previous color reference to the shader
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);//gl.ONE, gl.ONE); // Additive blending
-    // gl.blendFunc(gl.ONE, gl.ONE);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     renderer.render(camera, instancedShader, [square]); // Brush strokes
     // renderer.render(camera, lambertShader, [sphere]);
 
