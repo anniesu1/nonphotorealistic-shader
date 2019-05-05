@@ -25,7 +25,7 @@ __PARTICLE PLACEMENT THROUGHOUT A MESH__
 
 __BRUSH STROKES__
 * Instanced rendering of brush strokes (i.e. particles): each brush stroke is a png texture rendered on a square geometry. The background of the png texture is transparent. Note that, then, each brush stroke is simply a "2d brush stroke."  
-* Z-depth sorting: in order to get proper alpha blending, we sort all the brush strokes by decreasing distance from the camera, such that the farthest brush stroke gets rendered first (this is similar to the Painter's Algorithm). We do this by taking the dot product of the position along the camera's forward vector. This (according to the internet) is slightly more accurate and efficient than sorting by the point's distance from the camera position.
+* Z-depth sorting: in order to get proper alpha blending, we sort all the brush strokes by decreasing distance from the camera, such that the farthest brush stroke gets rendered first (this is similar to the Painter's Algorithm). We do this by taking the dot product of the position along the camera's forward vector. This (according to the internet) is slightly more accurate and efficient than sorting by the point's distance from the camera position. Please note that I do not resort the particles every time the camera moves, as this resulted in an incredibly slow frame rate, and I wanted to display how the render order affected what was occluded / displayed. If you look at the back of the lotus model, you can see that most brush strokes are occluded.
 * Brush stroke attributes:
   * Size: user-specified (on the GUI)
   * Orientation: currently uniform (no modification)
