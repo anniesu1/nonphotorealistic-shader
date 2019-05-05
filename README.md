@@ -32,9 +32,9 @@ __BRUSH STROKES__
   * Color: the color of a brush stroke is based on a reference image. The reference image consists of a lambertian shading of the original mesh. This reference image is stored as a texture that is then passed to the instanced shader, which looks up the color using computed uv coordinates for the brush stroke. Note that each brush stroke takes on exactly _one_ color. This allows for successful shading "over the edges" of the mesh. 
 * The user can select out of 3 different brush stroke textures and can also tune the brush stroke size. 
 
-![](/textures/brush_stroke_01.png)
-![](/textures/brush_stroke_02.png)
-![](/textures/brush_stroke_03.png)
+![](/lotus_brushStroke1.png)
+![](/lotus_brushStroke2.png)
+![](/lotus_brushStroke3.png)
 
 __CHALLENGES__
 * Texture passing: I had a big difficulty setting up the pipeline for passing a texture to the shader in order to correctly color the brush stroke. I had changed the pipeline twice, first passing the texture to the CPU, and passing a color attribute back to the shader. Then I changed it so that the texture would be directly passed to the GPU. 
